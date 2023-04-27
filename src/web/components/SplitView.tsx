@@ -10,7 +10,6 @@ import { useActionState, DisplayType } from "../domain/ActionState";
 import { useAppDispatch } from "../domain/AppState";
 import { useConfigState } from "../domain/ConfigState";
 import { ConfigSelector } from "./ConfigSelector";
-import { SidePanelHost } from "./SidePanelHost";
 
 interface SplitViewProps {
     primaryDataIds?: Array<string>;
@@ -47,11 +46,6 @@ export const SplitView = (props: SplitViewProps) => {
             { !!actionState.selectedRecord && actionState.selectedRecordDisplayType === DisplayType.notifications &&
                 <div style={{minWidth: "400px", flex: "1" }}>
                     <NotificationList />
-                </div>
-            }
-            { !!actionState.selectedRecord && actionState.selectedRecordDisplayType === DisplayType.globalData &&
-                <div style={{minWidth: "400px", flex: "1" }}>
-                    <SidePanelHost />
                 </div>
             }
         </div>

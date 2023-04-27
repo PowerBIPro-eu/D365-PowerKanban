@@ -25,7 +25,6 @@ import { RecordFilter } from "../domain/RecordFilter";
 import { IRenderFunction } from "@fluentui/react/lib/Utilities";
 import { Pivot, PivotItem } from "@fluentui/react/lib/Pivot";
 import { Stack, StackItem } from "@fluentui/react/lib/Stack";
-import { config } from "bluebird";
 
 const determineAttributeUrl = (attribute: Attribute) => {
   if (attribute.AttributeType === "Picklist") {
@@ -598,54 +597,6 @@ export const Board = () => {
     { key: 'clearAll', text: 'Clear All', onClick: () => { setPrimaryFilters([]); setSecondaryFilters([]); } }
   ];
 
-  React.useEffect(() => {
-    if (!actionState.selectedForm?.parsed) {
-      setPrimaryFilters([]);
-      return;
-    }
-    
-    const fields = [
-      ...actionState.selectedForm.parsed.header.rows.reduce((all, cur) => [ ...all, ...cur.cells.map(c => c.field )], [] as Array<string>),
-      ...actionState.selectedForm.parsed.body.rows.reduce((all, cur) => [ ...all, ...cur.cells.map(c => c.field )], [] as Array<string>),
-      ...actionState.selectedForm.parsed.footer.rows.reduce((all, cur) => [ ...all, ...cur.cells.map(c => c.field )], [] as Array<string>)
-    ];
-
-    setPrimaryFilters(fields.map(f => ({
-      logicalName: f,
-      displayName: configState.metadata.Attributes.find(a => a.LogicalName === f)?.DisplayName.UserLocalizedLabel.Label,
-      operator: "contains"
-    })));
-  }, [ appState.boardData ]);
-
-  React.useEffect(() => {
-    if (!actionState.selectedSecondaryForm?.parsed) {
-      setSecondaryFilters([]);
-      return;
-    }
-    
-    const fields = [
-      ...actionState.selectedSecondaryForm.parsed.header.rows.reduce((all, cur) => [ ...all, ...cur.cells.map(c => c.field )], [] as Array<string>),
-      ...actionState.selectedSecondaryForm.parsed.body.rows.reduce((all, cur) => [ ...all, ...cur.cells.map(c => c.field )], [] as Array<string>),
-      ...actionState.selectedSecondaryForm.parsed.footer.rows.reduce((all, cur) => [ ...all, ...cur.cells.map(c => c.field )], [] as Array<string>)
-    ];
-
-    setSecondaryFilters(fields.map(f => ({
-      logicalName: f,
-      displayName: configState.secondaryMetadata[configState.config.secondaryEntity.logicalName].Attributes.find(a => a.LogicalName === f)?.DisplayName.UserLocalizedLabel.Label,
-      operator: "contains"
-    })));
-  }, [ appState.secondaryData ]);
-
-  const toggleGlobalDisplay = () => {
-    if (actionState.selectedRecordDisplayType === DisplayType.globalData) {
-      actionDispatch({ type: "setSelectedRecordDisplayType", payload: undefined });
-    }
-    else {
-      actionDispatch({ type: "setSelectedRecordDisplayType", payload: DisplayType.globalData });
-      actionDispatch({ type: "setSelectedRecord", payload: undefined });
-    }
-  };
-
   const renderMenuList = React.useCallback(
     (menuListProps: IContextualMenuListProps, defaultRender: IRenderFunction<IContextualMenuListProps>) => {
       return (
@@ -655,14 +606,14 @@ export const Board = () => {
               { actionState?.selectedForm?.parsed &&
                 <PivotItem headerText="Primary Filters">
                   <Stack>
-                    { primaryFilters.map(f => <Dropdown label={f.displayName} options={[]} />) }
+                    { actionState.selectedForm.parsed.body }
                   </Stack>
                 </PivotItem>
               }
               { actionState?.selectedSecondaryForm?.parsed &&
                 <PivotItem headerText="Secondary Filters">
                   <Stack>
-                  { secondaryFilters.map(f => <Dropdown label={f.displayName} options={[]} />) }
+                    
                   </Stack>
                 </PivotItem>
               }
@@ -769,13 +720,6 @@ export const Board = () => {
       key: 'searchBox',
       onRender: () => <SearchBox styles={navItemStyles} placeholder="Search..." onClear={onEmptySearch} onSearch={onSearch} />
     },
-    (configState.config.sidePanels 
-      ? {
-        key: "globalDataToggle",
-        onRender: () => <IconButton onClick={toggleGlobalDisplay} iconProps={{ iconName: "" }} styles={navItemStyles} />
-      }
-      : null
-    ),
     {
       key: 'workIndicator',
       onRender: () => !!actionState.workIndicator && <Spinner styles={{root: { marginLeft: "auto" }}} label="Working..." ariaLive="assertive" labelPosition="right" />

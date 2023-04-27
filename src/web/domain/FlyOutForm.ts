@@ -11,12 +11,15 @@ export interface FlyOutField {
     required?: boolean;
     rows?: number;
     as?: any;
+    defaultValue?: string;
 }
 
 export interface FlyOutLookupField extends FlyOutField {
     fetchXml: string;
     displayField: string;
     secondaryFields: Array<string>;
+    defaultSelectedId: string;
+    defaultSelectedName: string;
 }
 
 export interface FlyOutForm {

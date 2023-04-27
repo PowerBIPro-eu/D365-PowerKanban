@@ -16,11 +16,15 @@ import { Subscription } from "../domain/Subscription";
 import { useConfigState } from "../domain/ConfigState";
 import { DisplayType, useActionDispatch } from "../domain/ActionState";
 import { IButtonStyles } from "@fluentui/react/lib/Button";
-import { Card, ICardStyles } from '@uifabric/react-cards';
-import { IconButton } from "@fluentui/react/lib/Button";
-import { Persona, PersonaSize } from "@fluentui/react/lib/Persona";
+//import { Card, ICardStyles } from '@uifabric/react-cards';
+import { ICardStyles } from '@uifabric/react-cards';
+// import { IconButton } from "@fluentui/react/lib/Button";
+// import { Persona, PersonaSize } from "@fluentui/react/lib/Persona";
 import { FetchUserAvatar } from "../domain/FetchUserInfo";
 import { IContextualMenuItem, IContextualMenuProps } from "@fluentui/react/lib/ContextualMenu";
+import { Badge, Caption1, Card as CardFluent, CardHeader, Subtitle2, Text as TextFluent, Persona as PersonaFluent, Divider, Button as ButtonFluent, makeStyles, shorthands, tokens, mergeClasses, FluentProvider, webLightTheme } from "@fluentui/react-components";
+import { CalendarAssistant20Regular, CalendarLtr20Regular } from "@fluentui/react-icons/lib/sizedIcons/chunk-2";
+import { Open16Regular } from "@fluentui/react-icons/lib/sizedIcons/chunk-8";
 
 interface TileProps {
     borderColor: string;
@@ -434,10 +438,197 @@ const TileRender = (props: TileProps) => {
 
         actionDispatch({ type: "setSelectedRecords", payload: { [props.data[props.metadata.PrimaryIdAttribute]]: !props.isSelected } });
     };
+
+	/*----------------------------------------------------------------------*/
+	/*------------------ React Fluent UI v9 Test code ---------------------*/
+	/*--------------------------------------------------------------------*/
+	const useStyles = makeStyles({
+		main: {
+		  display: "flex",
+		  flexDirection: "column",
+		  flexWrap: "wrap",
+		  columnGap: "16px",
+		  rowGap: "36px"
+		},
+	  
+		title: {
+		  ...shorthands.margin(0, 0, "12px")
+		},
+	  
+		card: {
+		  width: "100%",
+		  maxWidth: "100%",
+		  height: "fit-content"
+		},
+	  
+		flex: {
+		  ...shorthands.gap("4px"),
+		  display: "flex",
+		  flexDirection: "row",
+		  alignItems: "center"
+		},
+		flexCards: {
+		  ...shorthands.gap("4px"),
+		  display: "flex",
+		  flexDirection: "row",
+		  alignItems: "start",
+		  flexWrap: "wrap"
+		},
+	  
+		appIcon: {
+		  ...shorthands.borderRadius("4px"),
+		  height: "32px"
+		},
+	  
+		caption: {
+		  color: tokens.colorNeutralForeground3
+		},
+	  
+		cardFooter: {
+		  alignItems: "center",
+		  justifyContent: "space-between"
+		},
+	  
+		cardOnTrack: {
+		  borderLeftWidth: "3px",
+		  borderLeftStyle: "solid",
+		  borderLeftColor: "var(--colorPaletteGreenBackground3)"
+		},
+		cardDue7Days: {
+		  borderLeftWidth: "3px",
+		  borderLeftStyle: "solid",
+		  borderLeftColor: "var(--colorPaletteYellowBackground3)"
+		},
+		cardDueToday: {
+		  borderLeftWidth: "3px",
+		  borderLeftStyle: "solid",
+		  borderLeftColor: "var(--colorPalettePeachBorderActive)"
+		},
+		cardOverdue: {
+		  borderLeftWidth: "3px",
+		  borderLeftStyle: "solid",
+		  borderLeftColor: "var(--colorPaletteRedBackground3)"
+		},
+		cardClosed: {
+		  borderLeftWidth: "3px",
+		  borderLeftStyle: "solid",
+		  borderLeftColor: "var(--colorBrandBackground)"
+		},
+	  
+		bgOnTrack: {
+		  backgroundColor: "var(--colorPaletteGreenBackground3)",
+		  color: "white"
+		},
+		bgIn7Days: {
+		  backgroundColor: "var(--colorPaletteYellowBackground3)",
+		  color: "black"
+		},
+		bgToday: {
+		  backgroundColor: "var(--colorPalettePeachBorderActive)",
+		  color: "white"
+		},
+		bgOverdue: {
+		  backgroundColor: "var(--colorPaletteRedBackground3)",
+		  color: "white"
+		},
+		bgClosed: {
+		  backgroundColor: "var(--colorBrandBackground)",
+		  color: "white"
+		}
+	  });
+
+	  const stylesFluent = useStyles();
+
+	const getTaskTimeStatus = (dueDateStr: string, taskStatus: string) => {
+		const today = new Date();
+		const dueDate = new Date(dueDateStr);
+		if (taskStatus === "Closed") {
+			return "Closed"
+		}
+		if (today.getFullYear() === dueDate.getFullYear() &&
+		today.getMonth() === dueDate.getMonth() &&
+		today.getDate() === dueDate.getDate()) {
+			return "Due Today";
+		}
+		const diffTime = Math.abs(dueDate.getTime() - today.getTime());
+		if (Math.ceil(diffTime / (1000 * 60 * 60 * 24)) <= 7) {
+			return "Due in 7 Days"
+		}
+		if (today > dueDate) {
+			return "Overdue"
+		}
+		return "On Track"
+	}
+
+	const getCardClass = (taskStatus: string) => {
+		switch (taskStatus) {
+			case "Closed":
+				return mergeClasses(stylesFluent.card, stylesFluent.cardClosed)
+				break;
+			case "Due Today":
+				return mergeClasses(stylesFluent.card, stylesFluent.cardDueToday)
+				break;
+			case "Due in 7 Days":
+				return mergeClasses(stylesFluent.card, stylesFluent.cardDue7Days)
+				break;
+			case "Overdue":
+				return mergeClasses(stylesFluent.card, stylesFluent.cardOverdue)
+				break;
+			case "On Track":
+				return mergeClasses(stylesFluent.card, stylesFluent.cardOnTrack)
+				break;
+			default:
+				break;
+		}
+	}
+
+	const getBadgeClass = (taskStatus: string) => {
+		switch (taskStatus) {
+			case "Closed":
+				return mergeClasses(stylesFluent.bgClosed)
+				break;
+			case "Due Today":
+				return mergeClasses(stylesFluent.bgToday)
+				break;
+			case "Due in 7 Days":
+				return mergeClasses(stylesFluent.bgIn7Days)
+				break;
+			case "Overdue":
+				return mergeClasses(stylesFluent.bgOverdue)
+				break;
+			case "On Track":
+				return mergeClasses(stylesFluent.bgOnTrack)
+				break;
+			default:
+				break;
+		}
+	}
+
+	const getTaskBadges = () => {
+		const stage = props.data["crf44_qmstage@OData.Community.Display.V1.FormattedValue"];
+		const badgeFields = props.config.customConfigOptions[stage];
+		const badges = badgeFields.map(getTaskBadge);
+		return badges;
+	}
+
+	const getTaskBadge = (key: string) => {
+		const valueRaw = JSON.parse(props.data.crf44_qmcategorization)[key];
+		const value = valueRaw.charAt(0).toUpperCase() + valueRaw.slice(1);
+		return (
+			<Badge color="brand" shape="rounded" appearance="tint" size="small">
+				{value}
+			</Badge>
+		)
+	}
+
+	const taskTimeStatus = getTaskTimeStatus(props.data.scheduledend, props.data["crf44_qmstatus@OData.Community.Display.V1.FormattedValue"]);
+	const cardClass = getCardClass(taskTimeStatus);
+	const badgeClass = getBadgeClass(taskTimeStatus);
+	const badges = getTaskBadges();
     
     return (
         <div onClick={selectRecord} ref={ props.preventDrag ? stub : drag}>
-            <Card tokens={{ childrenGap: "5px" }} styles={{ root: { maxWidth: "auto", backgroundColor: "#fff", opacity, borderStyle: "solid", borderWidth: "1px", borderColor: "#d8d8d8", borderLeftColor: props.borderColor, borderLeftWidth: "3px", ...props.style, ...overriddenStyle, ...(props.isSelected ? { boxShadow: "0 0 1em deepskyblue" } : {}) }}}>
+            {/* <Card tokens={{ childrenGap: "5px" }} styles={{ root: { maxWidth: "auto", backgroundColor: "#fff", opacity, borderStyle: "solid", borderWidth: "1px", borderColor: "#d8d8d8", borderLeftColor: props.borderColor, borderLeftWidth: "3px", ...props.style, ...overriddenStyle, ...(props.isSelected ? { boxShadow: "0 0 1em deepskyblue" } : {}) }}}>
                 <Card.Section styles={{root: { padding: "10px", borderBottom: "1px solid rgba(0,0,0,.125)" }}}>
                     <div style={{display: "flex", flexDirection: "column"}}>
                         <div style={{display: "flex", flexDirection: "row"}}>
@@ -511,7 +702,86 @@ const TileRender = (props: TileProps) => {
                         { props.cardForm.parsed.footer.rows.map((r, i) => <div key={`footerRow_${props.data[props.metadata.PrimaryIdAttribute]}_${i}`} style={{ flex: "1" }}><FieldRow searchString={props.searchText} type="footer" metadata={props.metadata} data={props.data} cells={r.cells} /></div>) }
                     </div>
                 </Card.Section>
-            </Card>
+            </Card> */}
+			<FluentProvider theme={webLightTheme}>
+				<CardFluent className={cardClass} /*{...props}*/>
+					<CardHeader
+						image={
+							<Badge size="extra-large" className={badgeClass}>
+								{props.data["crf44_qmstage@OData.Community.Display.V1.FormattedValue"]}
+							</Badge>
+						}
+						header={
+							<Subtitle2>
+								<b>{props.data.subject}</b>
+							</Subtitle2>
+						}
+						action={
+						<Badge shape="rounded" className={badgeClass}>
+							{taskTimeStatus}
+						</Badge>
+						}
+					/>
+					<header
+						className={mergeClasses(stylesFluent.flex)}
+						style={{ flexWrap: "wrap" }}
+					>
+						{badges}
+					</header>
+
+					<div>
+						<TextFluent block weight="semibold">
+							Action description
+						</TextFluent>
+						<Caption1 block className={stylesFluent.caption}>
+							{props.data.description ?? "No additional action description"}
+						</Caption1>
+					</div>
+
+					<div
+						className={mergeClasses(stylesFluent.flex, stylesFluent.cardFooter)}
+						style={{ alignItems: "flex-start" }}
+					>
+						<div>
+						<TextFluent block weight="semibold">
+							Responsible
+						</TextFluent>
+						<PersonaFluent
+							name={props.data["_ownerid_value@OData.Community.Display.V1.FormattedValue"]}
+							avatar={{
+							image: {
+								src:
+								"https://magna.sharepoint.com/_layouts/15/userphoto.aspx?AccountName=insys.juricek@magna.com&Size=S"
+							}
+							}}
+							// {...props}
+						/>
+						</div>
+						<div>
+						<TextFluent block weight="semibold">
+							Due Date
+						</TextFluent>
+						<div className={stylesFluent.flex}>
+							<CalendarAssistant20Regular />
+							<TextFluent>{props.data["scheduledend@OData.Community.Display.V1.FormattedValue"].split(' ')[0]}</TextFluent>
+						</div>
+						</div>
+					</div>
+
+					<Divider />
+					<footer className={mergeClasses(stylesFluent.flex, stylesFluent.cardFooter)}>
+						<div className={stylesFluent.flex}>
+						<CalendarLtr20Regular />
+						<Caption1>
+							Created on <i>{props.data["createdon@OData.Community.Display.V1.FormattedValue"]}</i>
+						</Caption1>
+						</div>
+						<ButtonFluent icon={<Open16Regular />} size="small" onClick={openInModal}>
+							Open
+						</ButtonFluent>
+					</footer>
+				</CardFluent>
+			</FluentProvider>
         </div>
     );
 };

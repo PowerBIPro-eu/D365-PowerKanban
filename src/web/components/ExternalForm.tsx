@@ -11,6 +11,8 @@ import { Label } from "@fluentui/react/lib/Label";
 import { Text } from "@fluentui/react/lib/Text";
 import * as WebApiClient from "xrm-webapi-client";
 import { IconButton } from "@fluentui/react/lib/Button";
+import { Toggle } from '@fluentui/react/lib/Toggle';
+import { DatePicker, defaultDatePickerStrings } from "@fluentui/react/lib/DatePicker";
 
 interface ExternalFormProps {
 }
@@ -55,6 +57,20 @@ export const ExternalForm = (props: ExternalFormProps) => {
         setFormData({...formData, [id]: value });
     };
 
+    const onFieldChangeToggle = (e: any, checked: any) => {
+        const value = checked;
+        const id = e.target.id;
+
+        setFormData({...formData, [id]: value });
+    };
+
+    const onFieldChangeDate = (date: any, fieldId: any) => {
+        const value = date;
+        const id = fieldId;
+
+        setFormData({...formData, [id]: value });
+    };
+
     React.useEffect(() => {
         const lookups = fields.filter(([fieldId, field]) => field.type.toLowerCase() === "lookup");
 
@@ -79,10 +95,41 @@ export const ExternalForm = (props: ExternalFormProps) => {
     }, [ actionState.flyOutForm.fields ]);
 
     const textField = (fieldId: string, field: FlyOutField) => (
-        <TextField key={fieldId} id={fieldId} description={field.subtext} required={field.required} multiline={field.rows && field.rows > 1} rows={field.rows ?? 1} type={field.type} label={field.label} placeholder={field.placeholder} onChange={onFieldChange} />
+        <TextField
+        key={fieldId} id={fieldId}
+        description={field.subtext}
+        required={field.required}
+        multiline={field.rows && field.rows > 1}
+        rows={field.rows ?? 1}
+        type={field.type}
+        label={field.label}
+        placeholder={field.placeholder}
+        onChange={onFieldChange}
+        defaultValue={field.defaultValue}/>
     );
 
+    /* DDSol CUSTOM INPUT FIELDS */
+    const toggleField = (fieldId: string, field: FlyOutField) => (
+        field.defaultValue ?
+        <Toggle key={fieldId} id={fieldId} label={field.label} defaultChecked onText="Yes" offText="No" onChange={onFieldChangeToggle} /> :
+        <Toggle key={fieldId} id={fieldId} label={field.label} onText="Yes" offText="No" onChange={onFieldChangeToggle} />
+        
+    )
+
+    const datePicker = (fieldId: string, field: FlyOutField) => (
+        <DatePicker
+        placeholder="Select a date..."
+        ariaLabel="Select a date"
+        // DatePicker uses English strings by default. For localized apps, you must override this prop.
+        strings={defaultDatePickerStrings}
+        value={field.defaultValue != null ? new Date(field.defaultValue) : null}
+        onSelectDate={(date: any) => onFieldChangeDate(date, fieldId)}
+        key={fieldId} id={fieldId} label={field.label}
+      />
+    )
+
     const onItemSelected = (fieldId: string, item: IExtendedTag) => {
+		console.log(item);
         setFormData({ ...formData, [fieldId]: item?.key });
     };
 
@@ -144,14 +191,28 @@ export const ExternalForm = (props: ExternalFormProps) => {
                 pickerSuggestionsProps={pickerSuggestionsProps}
                 itemLimit={1}
                 inputProps={inputProps}
+                defaultSelectedItems={field.defaultSelectedId === null ? [] :[{
+                    key: field.defaultSelectedId,
+                    name: field.defaultSelectedName,
+                    data: { 
+						fullname: field.defaultSelectedName,
+						internalemailaddress: field.defaultSelectedName,
+						ownerid: field.defaultSelectedId,
+						systemuserid: field.defaultSelectedId
+					}
+                }]}
             />
             { field.subtext && <Text styles={{root: { color: "#666666" } }} variant="small">{field.subtext}</Text> }
         </>
     );
 
     return (
-        <UserInputModal okButtonDisabled={!Object.keys(actionState.flyOutForm.fields).every(fieldId => !actionState.flyOutForm.fields[fieldId].required || !!formData[fieldId])} noCallBack={noCallBack} yesCallBack={yesCallBack} finally={hideDialog} title={actionState.flyOutForm?.title} show={!!actionState.flyOutForm}>
-            {Object.keys(actionState.flyOutForm.fields).map(fieldId => [ fieldId, actionState.flyOutForm.fields[fieldId]] as [string, FlyOutField]).map(([fieldId, field]) => field.type.toLowerCase() === "lookup" ? lookupField(fieldId, field as FlyOutLookupField) : textField(fieldId, field))}
+        <UserInputModal okButtonDisabled={!Object.keys(actionState.flyOutForm.fields).every(fieldId => !actionState.flyOutForm.fields[fieldId].required || !!formData[fieldId] || actionState.flyOutForm.fields[fieldId].defaultValue)} noCallBack={noCallBack} yesCallBack={yesCallBack} finally={hideDialog} title={actionState.flyOutForm?.title} show={!!actionState.flyOutForm}>
+            {Object.keys(actionState.flyOutForm.fields).map(fieldId => [ fieldId, actionState.flyOutForm.fields[fieldId]] as [string, FlyOutField]).map((
+                [fieldId, field]) =>
+                    field.type.toLowerCase() === "lookup" ? lookupField(fieldId, field as FlyOutLookupField)
+                    : field.type.toLowerCase() === "toggle" ? toggleField(fieldId, field)
+                    : field.type.toLowerCase() === "date" ? datePicker(fieldId, field) : textField(fieldId, field))}
         </UserInputModal>
     );
 };
