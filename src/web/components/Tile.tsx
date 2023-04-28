@@ -551,12 +551,12 @@ const TileRender = (props: TileProps) => {
 		today.getDate() === dueDate.getDate()) {
 			return "Due Today";
 		}
+        if (today > dueDate) {
+			return "Overdue"
+		}
 		const diffTime = Math.abs(dueDate.getTime() - today.getTime());
 		if (Math.ceil(diffTime / (1000 * 60 * 60 * 24)) <= 7) {
 			return "Due in 7 Days"
-		}
-		if (today > dueDate) {
-			return "Overdue"
 		}
 		return "On Track"
 	}
@@ -621,7 +621,7 @@ const TileRender = (props: TileProps) => {
 	}
 
 	const getTaskBadgeFromQmCategorization = (key: string) => {
-		const valueRaw = JSON.parse(props.data.crf44_qmcategorization).key;
+		const valueRaw = JSON.parse(props.data.crf44_qmcategorization)[key];
 		const value = valueRaw.charAt(0).toUpperCase() + valueRaw.slice(1);
 		return getBadge(value);
 	}
