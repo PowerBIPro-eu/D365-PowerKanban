@@ -607,19 +607,31 @@ const TileRender = (props: TileProps) => {
 	const getTaskBadges = () => {
 		const stage = props.data["crf44_qmstage@OData.Community.Display.V1.FormattedValue"];
 		const badgeFields = props.config.customConfigOptions[stage];
-		const badges = badgeFields.map(getTaskBadge);
+        let badges: JSX.Element[] = [];
+        if ((props.data.crf44_qmcategorization ?? 'adhoc') !== 'adhoc') {
+            badges = badgeFields.map(getTaskBadgeFromQmCategorization);
+            if (stage === 'D4') {
+                badges.unshift(getBadge('Ishikawa'));
+            }
+        } else {
+            badges.push(getBadge('Additional Task'));
+        }
 		return badges;
 	}
 
-	const getTaskBadge = (key: string) => {
-		const valueRaw = JSON.parse(props.data.crf44_qmcategorization)[key];
+	const getTaskBadgeFromQmCategorization = (key: string) => {
+		const valueRaw = JSON.parse(props.data.crf44_qmcategorization).key;
 		const value = valueRaw.charAt(0).toUpperCase() + valueRaw.slice(1);
-		return (
-			<Badge color="brand" shape="rounded" appearance="tint" size="small">
+		return getBadge(value);
+	}
+
+    const getBadge = (value: String) => {
+        return (
+			<Badge color="brand" shape="rounded" appearance="tint" size="large">
 				{value}
 			</Badge>
 		)
-	}
+    }
 
 	const taskTimeStatus = getTaskTimeStatus(props.data.scheduledend, props.data["crf44_qmstatus@OData.Community.Display.V1.FormattedValue"]);
 	const cardClass = getCardClass(taskTimeStatus);
