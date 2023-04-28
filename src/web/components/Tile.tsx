@@ -56,6 +56,7 @@ const TileRender = (props: TileProps) => {
     const actionDispatch = useActionDispatch();
     const [overriddenStyle, setOverriddenStyle] = React.useState({} as ICardStyles);
     const [ personaUrl, setPersonaUrl ] = React.useState<string>(undefined);
+    const [ responsibleEmail, setResponsibleEmail ] = React.useState<string>(undefined);
 
     const secondaryConfig = configState.config.secondaryEntity;
     const secondaryMetadata = configState.secondaryMetadata[secondaryConfig ? secondaryConfig.logicalName : ""];
@@ -637,84 +638,13 @@ const TileRender = (props: TileProps) => {
 	const cardClass = getCardClass(taskTimeStatus);
 	const badgeClass = getBadgeClass(taskTimeStatus);
 	const badges = getTaskBadges();
+
+    React.useEffect(() => {
+        Xrm.WebApi.retrieveRecord('systemuser', props.data["_ownerid_value"], '?$select=internalemailaddress').then(result => setResponsibleEmail(result.internalemailaddress));
+    }, []);
     
     return (
         <div onClick={selectRecord} ref={ props.preventDrag ? stub : drag}>
-            {/* <Card tokens={{ childrenGap: "5px" }} styles={{ root: { maxWidth: "auto", backgroundColor: "#fff", opacity, borderStyle: "solid", borderWidth: "1px", borderColor: "#d8d8d8", borderLeftColor: props.borderColor, borderLeftWidth: "3px", ...props.style, ...overriddenStyle, ...(props.isSelected ? { boxShadow: "0 0 1em deepskyblue" } : {}) }}}>
-                <Card.Section styles={{root: { padding: "10px", borderBottom: "1px solid rgba(0,0,0,.125)" }}}>
-                    <div style={{display: "flex", flexDirection: "column"}}>
-                        <div style={{display: "flex", flexDirection: "row"}}>
-                            { props.config.persona !== null 
-                                ? <Persona title={personaTitle} imageUrl={personaUrl} imageAlt={personaTitle} styles={{root: { marginRight: "5px" } }} text={personaTitle} size={PersonaSize.size32}></Persona> 
-                                : headerData
-                            }
-                            <div style={{ marginLeft: "auto" }}>
-                                { props.config.notificationLookup && props.config.subscriptionLookup && 
-                                    <>
-                                        <IconButton
-                                            id="notificationButton"
-                                            styles={customSplitButtonStyles}
-                                            iconProps={{ iconName: iconName, style: { color: hasNotifications ? "red" : "inherit" }}}
-                                            split
-                                            aria-roledescription="split button"
-                                            menuProps={{ items: subscriptionMenuProps.items.filter(m => !!m) }}
-                                            onClick={showNotificationsQuick}
-                                        />
-                                    </>
-                                }
-                                <IconButton
-                                    id="moreButton"
-                                    styles={customSplitButtonStyles}
-                                    iconProps={{ iconName: 'Forward' }}
-                                    split
-                                    aria-roledescription="split button"
-                                    menuProps={({ items: menuProps.items.filter(m => !!m) })}
-                                    onClick={quickOpen}
-                                />
-                            </div>
-                        </div>
-                        { props.config.persona !== null && headerData }
-                    </div>
-                </Card.Section>
-                <Card.Section styles={{ root: { padding: "10px" }}}>
-                    <div style={{display: "flex", overflow: "auto", flexDirection: "column" }}>
-                        { props.cardForm.parsed.body.rows.map((r, i) => <div key={`bodyRow_${props.data[props.metadata.PrimaryIdAttribute]}_${i}`} style={{ flex: "1" }}><FieldRow searchString={props.searchText} type="body" metadata={props.metadata} data={props.data} cells={r.cells} /></div>) }
-                    </div>
-                    { props.secondaryData &&
-                    <div>
-                        <div className="border-top my-3"></div>
-                        <span style={{marginLeft: "5px", fontSize: "larger"}}>
-                            {secondaryMetadata.DisplayCollectionName.UserLocalizedLabel.Label}
-                        </span>
-                        <IconButton iconProps={{iconName: "Add"}} style={{marginLeft: "5px"}} onClick={createNewSecondary}></IconButton>
-                        <div id="flexContainer" style={{ display: "flex", flexDirection: "row", overflow: "auto" }}>
-                            {
-                                props.secondaryData.map(d => <Lane
-                                refresh={props.refresh}
-                                notifications={props.secondaryNotifications}
-                                searchText={props.searchText}
-                                subscriptions={props.secondarySubscriptions}
-                                dndType={`${ItemTypes.Tile}_${props.data[props.metadata.PrimaryIdAttribute]}`}
-                                key={`lane_${d.option?.Value ?? "fallback"}`}
-                                minWidth="300px"
-                                cardForm={props.selectedSecondaryForm}
-                                metadata={secondaryMetadata}
-                                lane={d}
-                                config={secondaryConfig}
-                                separatorMetadata={secondarySeparator}
-                                openRecord={props.openRecord}
-                                isSecondaryLane />)
-                            }
-                        </div>
-                    </div>
-                    }
-                </Card.Section>
-                <Card.Section styles={{ root: { backgroundColor: "#efefef", padding: "10px", borderTop: "1px solid rgba(0,0,0,.125)" }}}>
-                    <div style={{display: "flex", overflow: "auto", flexDirection: "column" }}>
-                        { props.cardForm.parsed.footer.rows.map((r, i) => <div key={`footerRow_${props.data[props.metadata.PrimaryIdAttribute]}_${i}`} style={{ flex: "1" }}><FieldRow searchString={props.searchText} type="footer" metadata={props.metadata} data={props.data} cells={r.cells} /></div>) }
-                    </div>
-                </Card.Section>
-            </Card> */}
 			<FluentProvider theme={webLightTheme}>
 				<CardFluent className={cardClass} /*{...props}*/>
 					<CardHeader
@@ -763,7 +693,7 @@ const TileRender = (props: TileProps) => {
 							avatar={{
 							image: {
 								src:
-								"https://magna.sharepoint.com/_layouts/15/userphoto.aspx?AccountName=insys.juricek@magna.com&Size=S"
+								`https://magna.sharepoint.com/_layouts/15/userphoto.aspx?AccountName=${responsibleEmail}&Size=S`
 							}
 							}}
 							// {...props}
