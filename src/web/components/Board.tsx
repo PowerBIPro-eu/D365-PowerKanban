@@ -769,13 +769,6 @@ export const Board = () => {
       key: 'searchBox',
       onRender: () => <SearchBox styles={navItemStyles} placeholder="Search..." onClear={onEmptySearch} onSearch={onSearch} />
     },
-    (configState.config.sidePanels 
-      ? {
-        key: "globalDataToggle",
-        onRender: () => <IconButton onClick={toggleGlobalDisplay} iconProps={{ iconName: "" }} styles={navItemStyles} />
-      }
-      : null
-    ),
     {
       key: 'workIndicator',
       onRender: () => !!actionState.workIndicator && <Spinner styles={{root: { marginLeft: "auto" }}} label="Working..." ariaLive="assertive" labelPosition="right" />

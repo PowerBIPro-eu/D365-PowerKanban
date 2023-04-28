@@ -9,6 +9,8 @@
     "start": "pcf-scripts start"
   },
   "dependencies": {
+    "@fluentui/react-components": "^9.19.1",
+    "@fluentui/react-icons": "^2.0.200",
     "@types/node": "^10.12.18",
     "@types/powerapps-component-framework": "^1.2.0"
   },

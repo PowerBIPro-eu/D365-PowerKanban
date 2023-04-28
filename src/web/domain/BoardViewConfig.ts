@@ -62,5 +62,4 @@ export interface BoardViewConfig {
     customStyleUrl: string;
     cachingEnabled: boolean;
     defaultDisplayState: DisplayState;
-    sidePanels?: Array<SidePanelConfiguration>;
 }
