@@ -83,6 +83,7 @@ export class ErrorBoundary extends React.Component<any, ErrorBoundaryState> {
                     <p>Please copy below error information and open an issue <a href="https://github.com/XRM-OSS/D365-PowerKanban/issues">here</a></p>
                     <p>{this.state.error.message}</p>
                     <p>{this.state.error.stack}</p>
+                    
                     <DefaultButton onClick={this.resetError}>Restore Board</DefaultButton>
                 </div>
             </Modal>

@@ -23,8 +23,7 @@ import { ICardStyles } from '@uifabric/react-cards';
 import { FetchUserAvatar } from "../domain/FetchUserInfo";
 import { IContextualMenuItem, IContextualMenuProps } from "@fluentui/react/lib/ContextualMenu";
 import { Badge, Caption1, Card as CardFluent, CardHeader, Subtitle2, Text as TextFluent, Persona as PersonaFluent, Divider, Button as ButtonFluent, makeStyles, shorthands, tokens, mergeClasses, FluentProvider, webLightTheme } from "@fluentui/react-components";
-import { CalendarAssistant20Regular, CalendarLtr20Regular } from "@fluentui/react-icons/lib/sizedIcons/chunk-2";
-import { Open16Regular } from "@fluentui/react-icons/lib/sizedIcons/chunk-8";
+import { CalendarAssistant20Regular, CalendarLtr20Regular, Open16Regular } from "@fluentui/react-icons";
 
 interface TileProps {
     borderColor: string;
@@ -622,7 +621,7 @@ const TileRender = (props: TileProps) => {
 
 	const getTaskBadgeFromQmCategorization = (key: string) => {
 		const valueRaw = JSON.parse(props.data.crf44_qmcategorization)[key];
-		const value = valueRaw.charAt(0).toUpperCase() + valueRaw.slice(1);
+		const value = valueRaw?.charAt(0).toUpperCase() + valueRaw?.slice(1);
 		return getBadge(value);
 	}
 
@@ -642,6 +641,21 @@ const TileRender = (props: TileProps) => {
     React.useEffect(() => {
         Xrm.WebApi.retrieveRecord('systemuser', props.data["_ownerid_value"], '?$select=internalemailaddress').then(result => setResponsibleEmail(result.internalemailaddress));
     }, []);
+
+    const getTaskDescription = () => {
+        if (props.data.description) {
+            return <div>
+                <TextFluent block weight="semibold">
+                    Action description
+                </TextFluent>
+                <Caption1 block className={stylesFluent.caption}>
+                    {props.data.description}
+                </Caption1>
+            </div>
+        }
+        return <></>
+    }
+    const taskDescription = getTaskDescription();
     
     return (
         <div onClick={selectRecord} ref={ props.preventDrag ? stub : drag}>
@@ -671,14 +685,7 @@ const TileRender = (props: TileProps) => {
 						{badges}
 					</header>
 
-					<div>
-						<TextFluent block weight="semibold">
-							Action description
-						</TextFluent>
-						<Caption1 block className={stylesFluent.caption}>
-							{props.data.description ?? "No additional action description"}
-						</Caption1>
-					</div>
+                    {taskDescription}
 
 					<div
 						className={mergeClasses(stylesFluent.flex, stylesFluent.cardFooter)}
@@ -718,7 +725,7 @@ const TileRender = (props: TileProps) => {
 							Created on <i>{props.data["createdon@OData.Community.Display.V1.FormattedValue"]}</i>
 						</Caption1>
 						</div>
-						<ButtonFluent icon={<Open16Regular />} size="small" onClick={openInModal}>
+                        <ButtonFluent icon={<Open16Regular />} size="small" onClick={openInModal}>
 							Open
 						</ButtonFluent>
 					</footer>

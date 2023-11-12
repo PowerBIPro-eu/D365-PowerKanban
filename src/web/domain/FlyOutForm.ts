@@ -20,10 +20,13 @@ export interface FlyOutLookupField extends FlyOutField {
     secondaryFields: Array<string>;
     defaultSelectedId: string;
     defaultSelectedName: string;
+    defaultValue: string;
 }
 
 export interface FlyOutForm {
     title: string;
+    taskTitle: string;
+    taskDescription: string;
     fields: {[key: string]: FlyOutField };
     resolve: (result: FlyOutFormResult) => void;
     reject: (e: Error) => void;

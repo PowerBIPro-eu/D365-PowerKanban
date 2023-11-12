@@ -6,6 +6,7 @@ import { UserInputModal } from "./UserInputModalProps";
 import { useActionContext } from "../domain/ActionState";
 import { FlyOutField, FlyOutLookupField } from "../domain/FlyOutForm";
 import { TextField } from "@fluentui/react/lib/TextField";
+import { Separator } from '@fluentui/react/lib/Separator';
 import { TagPicker, ITag, IBasePicker, IInputProps, IBasePickerSuggestionsProps, ISuggestionItemProps, IBasePickerProps, IPickerItemProps, TagItem, BasePicker } from "@fluentui/react/lib/Pickers";
 import { Label } from "@fluentui/react/lib/Label";
 import { Text } from "@fluentui/react/lib/Text";
@@ -90,7 +91,11 @@ export const ExternalForm = (props: ExternalFormProps) => {
                 returnAllPages: true,
                 headers: [ { key: "Prefer", value: "odata.include-annotations=\"*\"" } ]
             });
-            setPickData({...pickData, [fieldId]: data.value.map((d: any) => ({ key: d[`${entityName}id`], data: d } as IExtendedTag)) });
+            //setPickData({...pickData, [fieldId]: data.value.map((d: any) => ({ key: d[`${entityName}id`], data: d } as IExtendedTag)) });
+            setPickData(prevPickData => ({
+                ...prevPickData,
+                [fieldId]: data.value.map((d: any) => ({ key: d[`${entityName}id`], data: d } as IExtendedTag))
+            }));
         });
     }, [ actionState.flyOutForm.fields ]);
 
@@ -105,32 +110,35 @@ export const ExternalForm = (props: ExternalFormProps) => {
         label={field.label}
         placeholder={field.placeholder}
         onChange={onFieldChange}
-        defaultValue={field.defaultValue}/>
+        defaultValue={field.defaultValue}
+        />
     );
 
     /* DDSol CUSTOM INPUT FIELDS */
     const toggleField = (fieldId: string, field: FlyOutField) => (
         field.defaultValue ?
-        <Toggle key={fieldId} id={fieldId} label={field.label} defaultChecked onText="Yes" offText="No" onChange={onFieldChangeToggle} /> :
-        <Toggle key={fieldId} id={fieldId} label={field.label} onText="Yes" offText="No" onChange={onFieldChangeToggle} />
+        <Toggle key={fieldId} id={fieldId} label={field.label} defaultChecked onText="Yes" offText="No" onChange={onFieldChangeToggle}/> :
+        <Toggle key={fieldId} id={fieldId} label={field.label} onText="Yes" offText="No" onChange={onFieldChangeToggle}/>
         
     )
 
     const datePicker = (fieldId: string, field: FlyOutField) => (
-        <DatePicker
-        placeholder="Select a date..."
-        ariaLabel="Select a date"
-        // DatePicker uses English strings by default. For localized apps, you must override this prop.
-        strings={defaultDatePickerStrings}
-        value={field.defaultValue != null ? new Date(field.defaultValue) : null}
-        onSelectDate={(date: any) => onFieldChangeDate(date, fieldId)}
-        key={fieldId} id={fieldId} label={field.label}
-      />
+        <>
+            <DatePicker
+                placeholder="Select a date..."
+                ariaLabel="Select a date"
+                // DatePicker uses English strings by default. For localized apps, you must override this prop.
+                strings={defaultDatePickerStrings}
+                onSelectDate={(date: any) => onFieldChangeDate(date, fieldId)}
+                key={fieldId} id={fieldId} label={field.label}
+            />
+            <Text styles={{root: { color: "#666666" } }} variant="small">{field.defaultValue != null ? `Responsible entered: ${new Date(field.defaultValue).toLocaleDateString()}` : ""}</Text>
+        </>
     )
 
     const onItemSelected = (fieldId: string, item: IExtendedTag) => {
 		console.log(item);
-        setFormData({ ...formData, [fieldId]: item?.key });
+        setFormData({ ...formData, [fieldId]: item?.key, [`${fieldId}Name`]: item?.data?.fullname });
     };
 
     const getTextFromItemByKey = (item: IExtendedTag, displayField: string) => extractTextFromAttribute(item.data, displayField);
@@ -176,6 +184,7 @@ export const ExternalForm = (props: ExternalFormProps) => {
     };
 
     const lookupField = (fieldId: string, field: FlyOutLookupField) => (
+        field.defaultValue ?
         <>
             <Label required={!!field.required}>{field.label}</Label>
             <GenericEntityPickerProps
@@ -191,7 +200,7 @@ export const ExternalForm = (props: ExternalFormProps) => {
                 pickerSuggestionsProps={pickerSuggestionsProps}
                 itemLimit={1}
                 inputProps={inputProps}
-                defaultSelectedItems={field.defaultSelectedId === null ? [] :[{
+                defaultSelectedItems={field.defaultSelectedId === null ? null :[{
                     key: field.defaultSelectedId,
                     name: field.defaultSelectedName,
                     data: { 
@@ -201,15 +210,49 @@ export const ExternalForm = (props: ExternalFormProps) => {
 						systemuserid: field.defaultSelectedId
 					}
                 }]}
+
+            />
+            { field.subtext && <Text styles={{root: { color: "#666666" } }} variant="small">{field.subtext}</Text> }
+        </> :
+        <>
+            <Label required={!!field.required}>{field.label}</Label>
+            <GenericEntityPickerProps
+                key={fieldId}
+                removeButtonAriaLabel="Remove"
+                onRenderItem={(props) => selectedItem(props, field)}
+                onRenderSuggestionsItem={(props, itemProps) => suggestionItem(props, itemProps, field)}
+                onResolveSuggestions={(filter: string, selectedItems?: IExtendedTag[]) => filterSelectedTags(fieldId, filter, selectedItems, field)}
+                onChange={(items) => onItemSelected(fieldId, items && items.length ? items[0] : null)}
+                onEmptyResolveSuggestions={(selectedItems?: IExtendedTag[]) => filterSelectedTags(fieldId, "", selectedItems, field)}
+                onRemoveSuggestion={() => onItemSelected(fieldId, null)}
+                getTextFromItem={(item: IExtendedTag) => getTextFromItem(item, field)}
+                pickerSuggestionsProps={pickerSuggestionsProps}
+                itemLimit={1}
+                inputProps={inputProps}
             />
             { field.subtext && <Text styles={{root: { color: "#666666" } }} variant="small">{field.subtext}</Text> }
         </>
     );
 
+    const triggerChangeOnLoad = (fields: {[key: string]: FlyOutField }) => {
+        console.log('trigering change events when flyoutform loads');
+        Object.keys(fields).forEach(fieldId => document.querySelector(`#${fieldId}`).dispatchEvent(new Event('change')));
+    }
+
     return (
-        <UserInputModal okButtonDisabled={!Object.keys(actionState.flyOutForm.fields).every(fieldId => !actionState.flyOutForm.fields[fieldId].required || !!formData[fieldId] || actionState.flyOutForm.fields[fieldId].defaultValue)} noCallBack={noCallBack} yesCallBack={yesCallBack} finally={hideDialog} title={actionState.flyOutForm?.title} show={!!actionState.flyOutForm}>
+        <UserInputModal onLoad={() => triggerChangeOnLoad(actionState.flyOutForm.fields)} okButtonDisabled={!Object.keys(actionState.flyOutForm.fields).every(fieldId => !actionState.flyOutForm.fields[fieldId].required || !!formData[fieldId] || actionState.flyOutForm.fields[fieldId].defaultValue)} noCallBack={noCallBack} yesCallBack={yesCallBack} finally={hideDialog} title={actionState.flyOutForm?.title} show={!!actionState.flyOutForm}>
+            <h4>Action</h4>
+            <Text>{actionState.flyOutForm?.taskTitle}</Text>
+            {
+                actionState.flyOutForm?.taskDescription ?
+                <>
+                    <h4>Action Description</h4>
+                    <Text>{actionState.flyOutForm?.taskDescription}</Text>
+                </> : <></>
+            }            
+            <Separator>Action Responses</Separator>
             {Object.keys(actionState.flyOutForm.fields).map(fieldId => [ fieldId, actionState.flyOutForm.fields[fieldId]] as [string, FlyOutField]).map((
-                [fieldId, field]) =>
+                [fieldId, field]) => 
                     field.type.toLowerCase() === "lookup" ? lookupField(fieldId, field as FlyOutLookupField)
                     : field.type.toLowerCase() === "toggle" ? toggleField(fieldId, field)
                     : field.type.toLowerCase() === "date" ? datePicker(fieldId, field) : textField(fieldId, field))}
