@@ -20,7 +20,7 @@ import { ICardStyles } from '@uifabric/react-cards';
 import { FetchUserAvatar } from "../domain/FetchUserInfo";
 import { IContextualMenuProps } from "@fluentui/react/lib/ContextualMenu";
 import { Card as CardFluent, CardHeader } from "@fluentui/react-card";
-import { Button } from "@fluentui/react-button";
+import { Button } from "@fluentui/react-components";
 import { FluentProvider } from "@fluentui/react-provider";
 import { Menu, MenuItem, MenuList, MenuPopover, MenuTrigger } from "@fluentui/react-menu";
 import { ProgressBar } from "@fluentui/react-progress";
@@ -35,7 +35,7 @@ import { Field } from "@fluentui/react-field";
 import { makeStyles, mergeClasses } from "@fluentui/react-components";
 import { shorthands } from "@griffel/core/";
 import { tokens, webLightTheme } from "@fluentui/tokens";
-import { Star16Filled, Alert16Filled, ArrowDown16Filled, ArrowRight24Regular, GanttChart24Regular, Important16Filled, CalendarAssistant20Regular, CalendarLtr20Regular, ChatMultiple16Regular, Circle16Filled, MeetNow24Regular, MoreHorizontal20Filled, ClipboardTask24Regular, ClockToolbox24Regular, Open16Regular } from "@fluentui/react-icons/lib/sizedIcons/chunk-ddsol";
+import { Star16Filled, Alert16Filled, ArrowDown16Filled, ArrowRight24Regular, GanttChart24Regular, Important16Filled, CalendarAssistant20Regular, CalendarLtr20Regular, ChatMultiple16Regular, Circle16Filled, MeetNow24Regular, MoreHorizontal20Filled, ClipboardTask24Regular, ClockToolbox24Regular, Open16Regular } from "@fluentui/react-icons";
 import { title } from "process";
 import { Link } from "@fluentui/react/lib/components/Link/Link";
 
@@ -47,7 +47,7 @@ interface TileProps {
     dndType?: string;
     laneOption?: Option;
     metadata: Metadata;
-    notifications: Array<Notification>;
+    notifications?: Array<Notification>;
     searchText: string;
     secondaryData?: Array<BoardLane>;
     secondaryNotifications?: {[key: string]: Array<Notification>};
@@ -268,11 +268,11 @@ const TileRender = (props: TileProps) => {
         actionDispatch({ type: "setWorkIndicator", payload: true });
 
         await WebApiClient.Create({
-            entityName: "oss_subscription",
+            entityName: "ddsol_subscription",
             entity: {
                 [`${props.config.subscriptionLookup}@odata.bind`]: `/${props.metadata.LogicalCollectionName}(${props.data[props.metadata.PrimaryIdAttribute].replace("{", "").replace("}", "")})`,
-                "oss_emailnotificationsenabled": emailNotificationsEnabled,
-                "oss_emailnotificationssender": emailNotificationsSender
+                "ddsol_emailnotificationsenabled": emailNotificationsEnabled,
+                "ddsol_emailnotificationssender": emailNotificationsSender
             }
         });
 
@@ -291,8 +291,8 @@ const TileRender = (props: TileProps) => {
 
             await Promise.all(subscriptionsToDelete.map(s =>
                 WebApiClient.Delete({
-                    entityName: "oss_subscription",
-                    entityId: s.oss_subscriptionid
+                    entityName: "ddsol_subscription",
+                    entityId: s.ddsol_subscriptionid
                 })
             ));
 
@@ -311,8 +311,8 @@ const TileRender = (props: TileProps) => {
 
             await Promise.all(notificationsToDelete.map(s =>
                 WebApiClient.Delete({
-                    entityName: "oss_notification",
-                    entityId: s.oss_notificationid
+                    entityName: "ddsol_notification",
+                    entityId: s.ddsol_notificationid
                 })
             ));
 
@@ -332,7 +332,7 @@ const TileRender = (props: TileProps) => {
     };
 
     const isSubscribed = props.subscriptions && props.subscriptions.length;
-    const isMailSubscribed = isSubscribed && props.subscriptions.some(s => s.oss_emailnotificationsenabled);
+    const isMailSubscribed = isSubscribed && props.subscriptions.some(s => s.ddsol_emailnotificationsenabled);
     const hasNotifications = props.notifications && props.notifications.length;
 
     console.log(`${props.metadata.LogicalName} tile ${props.data[props.metadata.PrimaryIdAttribute]} is rerendering`);
@@ -895,137 +895,109 @@ const TileRender = (props: TileProps) => {
     }, [assignees, managers]);
     
     return (
-        <div onClick={selectRecord} ref={ checkIfDragable ? drag : stub}>
+        // <div onClick={selectRecord} ref={ checkIfDragable ? drag : stub}>
+        <div onClick={selectRecord} ref={drag}>
             <FluentProvider theme={webLightTheme}>
                 <CardFluent className={mergeClasses(styles.card, styles.cardClosed)}>
-                    <CardHeader
-                    image={
-                        <ImageFluent
-                            alt="Project Logo"
-                            src={projectImgUrl}
-                            height={30}
-                            width={30}
-                            />
-                    }
-                    header={
-                        <Subtitle2>
-                        <b>{props.data.msdyn_subject}</b>
-                        </Subtitle2>
-                    }
-                    action={
-                        <Menu>
-                            <MenuTrigger disableButtonEnhancement>
-                                <Button
-                                appearance="transparent"
-                                icon={<MoreHorizontal20Filled />}
-                                aria-label="More options"
-                                />
-                            </MenuTrigger>
+                    {props.config.logicalName === 'ddsol_cs_costingsheet' ?
+                        <><CardHeader
+                            image={<Badge appearance="filled" color="brand">{props.data.ddsol_cstitle.slice(0, 2)}</Badge>}
+                            header={<Subtitle2>
+                                <b>{props.data.ddsol_cstitle}</b>
+                            </Subtitle2>} /><Divider /><footer className={mergeClasses(styles.flex, styles.cardFooter)}>
+                                <div className={styles.flex}>
+                                    <CalendarLtr20Regular />
+                                    <Caption1>
+                                        Modified on <i>{new Date(props.data.modifiedon).toDateString()}</i>
+                                    </Caption1>
+                                </div>
+                                <div>
+                                    <Button
+                                        icon={<Open16Regular />}
+                                        size="small"
+                                        style={{ marginRight: "1rem" }}
+                                        onClick={openInline}
+                                    >
+                                        Open
+                                    </Button>
+                                </div>
+                            </footer></> :
+                        <><CardHeader
+                            image={<Badge appearance="filled" color="brand">{props.data["_ddsol_plant_value@OData.Community.Display.V1.FormattedValue"]}</Badge>}
+                            header={<Subtitle2>
+                                <b>{props.data.ddsol_name}</b>
+                            </Subtitle2>} />
+                            <header
+                            className={mergeClasses(styles.flex)}
+                            style={{ flexWrap: "wrap" }}
+                            >
+                            <Badge
+                                color="brand"
+                                shape="rounded"
+                                appearance="tint"
+                                size="large"
+                                icon={<GanttChart24Regular />}
+                                title="Project"
+                            >
+                                {props.data["_ddsol_project_value@OData.Community.Display.V1.FormattedValue"]}
+                            </Badge>
+                            </header>
 
-                            <MenuPopover>
-                                <MenuList>
-                                    <MenuItem icon={<ClockToolbox24Regular />} onClick={() => {OpenPreFilledActivityTrackerForm(false)}}>
-                                        New Activity Tracker
-                                    </MenuItem>
-                                    <MenuItem icon={<MeetNow24Regular />} onClick={() => {OpenPreFilledActivityTrackerForm(true)}}>Start Meeting Activity</MenuItem>
-                                    <MenuItem icon={<ClipboardTask24Regular />} onClick={openInModal}>
-                                        Open Task
-                                    </MenuItem>
-                                    {messageMenuItem}
-                                </MenuList>
-                            </MenuPopover>
-                        </Menu>
-                    }
-                    />
-                    <header
-                    className={mergeClasses(styles.flex)}
-                    style={{ flexWrap: "wrap" }}
-                    >
-                    <Badge
-                        color="brand"
-                        shape="rounded"
-                        appearance="tint"
-                        size="large"
-                        icon={<GanttChart24Regular />}
-                        title="Project"
-                    >
-                        {extractTextFromAttribute(props.data, "msdyn_project")}
-                    </Badge>
-                    <Badge
-                        color="brand"
-                        shape="rounded"
-                        appearance="tint"
-                        size="large"
-                        title="Potential Reward Rating"
-                    >
-                        {getPotentialRewardStars(props.data.ddsol_potentialrewardrating)}
-                    </Badge>
-                    {getPriorityBadge(props.data.msdyn_priority)}
-                    </header>
-
-                    <div>
-                    <Text block weight="semibold">
-                        Task description
-                    </Text>
-                    <Caption1 block className={styles.caption}><div dangerouslySetInnerHTML={{__html: props.data.msdyn_description}}></div></Caption1>
-                    </div>
-
-                    <div
-                    className={mergeClasses(styles.flex, styles.cardFooter)}
-                    style={{ alignItems: "flex-start" }}
-                    >
-                    <div>
-                        <Text block weight="semibold">
-                        Assigned to
-                        </Text>
-                        {getAssigneeAvatars}
-                    </div>
-                    <div>
-                        <Text block weight="semibold">
-                        Finish
-                        </Text>
-                        <div className={styles.flex}>
-                        <CalendarAssistant20Regular />
-                        <Text>{new Date(props.data.msdyn_finish).toDateString()}</Text>
-                        </div>
-                    </div>
-                    </div>
-
-                    <Field
-                    validationMessage={getProgressBarMessage(props.data.ddsol_totalworkduration ?? 0, props.data.msdyn_effort ?? 0)}
-                    validationState="none"
-                    >
-                    <ProgressBar
-                        color="brand"
-                        shape="rounded"
-                        thickness="large"
-                        value={(props.data.ddsol_totalworkduration ?? 0 /props.data.msdyn_effort)}
-                    />
-                    </Field>
-
-                    <div className={styles.flexCards}>
-                        {getAttachmentCards}
-                    </div>
-
-                    <Divider />
-                    <footer className={mergeClasses(styles.flex, styles.cardFooter)}>
-                    <div className={styles.flex}>
-                        <CalendarLtr20Regular />
-                        <Caption1>
-                        Created on <i>{new Date(props.data.createdon).toDateString()}</i>
-                        </Caption1>
-                    </div>
-                    <div>
-                        <Button
-                        icon={<Open16Regular />}
-                        size="small"
-                        style={{ marginRight: "1rem" }}
-                        onClick={openInModal}
-                        >
-                        Open
-                        </Button>
-                    </div>
-                    </footer>
+                            <div
+                            className={mergeClasses(styles.flex, styles.cardFooter)}
+                            style={{ alignItems: "flex-start" }}
+                            >
+                            <div>
+                                <Text block weight="semibold">
+                                Final Quote Deadline
+                                </Text>
+                                <Caption1 block className={styles.caption}>
+                                {new Date(props.data.ddsol_finalquotedeadline).toDateString()}
+                                </Caption1>
+                            </div>
+                            <div>
+                                <Text block weight="semibold">
+                                CS Status
+                                </Text>
+                                <Caption1 block className={styles.caption}>
+                                {props.data['ddsol_sts_costingsheet@OData.Community.Display.V1.FormattedValue']}
+                                </Caption1>
+                            </div>
+                            <div>
+                                <Text block weight="semibold">
+                                BIP Status
+                                </Text>
+                                <Caption1 block className={styles.caption}>
+                                {props.data['ddsol_sts_bip@OData.Community.Display.V1.FormattedValue']}
+                                </Caption1>
+                            </div>
+                            <div>
+                                <Text block weight="semibold">
+                                FS Result
+                                </Text>
+                                <Caption1 block className={styles.caption}>
+                                {props.data['ddsol_fsresult@OData.Community.Display.V1.FormattedValue']}
+                                </Caption1>
+                            </div>
+                            </div>
+                            <Divider /><footer className={mergeClasses(styles.flex, styles.cardFooter)}>
+                                <div className={styles.flex}>
+                                    <CalendarLtr20Regular />
+                                    <Caption1>
+                                        Created on <i>{new Date(props.data.createdon).toDateString()}</i>
+                                    </Caption1>
+                                </div>
+                                <div>
+                                    <Button
+                                        icon={<Open16Regular />}
+                                        size="small"
+                                        style={{ marginRight: "1rem" }}
+                                        onClick={openInline}
+                                    >
+                                        Open
+                                    </Button>
+                                </div>
+                            </footer></>}
                 </CardFluent>
             </FluentProvider>
         </div>

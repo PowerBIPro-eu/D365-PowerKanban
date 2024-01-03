@@ -128,30 +128,31 @@ export const ExternalForm = (props: ExternalFormProps) => {
         );
     };
 
-    const lookupField = (fieldId: string, field: FlyOutLookupField) => (
-        <>
-            <Label required={!!field.required}>{field.label}</Label>
-            <GenericEntityPickerProps
-                key={fieldId}
-                removeButtonAriaLabel="Remove"
-                onRenderItem={(props) => selectedItem(props, field)}
-                onRenderSuggestionsItem={(props, itemProps) => suggestionItem(props, itemProps, field)}
-                onResolveSuggestions={(filter: string, selectedItems?: IExtendedTag[]) => filterSelectedTags(fieldId, filter, selectedItems, field)}
-                onChange={(items) => onItemSelected(fieldId, items && items.length ? items[0] : null)}
-                onEmptyResolveSuggestions={(selectedItems?: IExtendedTag[]) => filterSelectedTags(fieldId, "", selectedItems, field)}
-                onRemoveSuggestion={() => onItemSelected(fieldId, null)}
-                getTextFromItem={(item: IExtendedTag) => getTextFromItem(item, field)}
-                pickerSuggestionsProps={pickerSuggestionsProps}
-                itemLimit={1}
-                inputProps={inputProps}
-            />
-            { field.subtext && <Text styles={{root: { color: "#666666" } }} variant="small">{field.subtext}</Text> }
-        </>
-    );
+    // const lookupField = (fieldId: string, field: FlyOutLookupField) => (
+    //     <>
+    //         <Label required={!!field.required}>{field.label}</Label>
+    //         <GenericEntityPickerProps
+    //             key={fieldId}
+    //             removeButtonAriaLabel="Remove"
+    //             onRenderItem={(props) => selectedItem(props, field)}
+    //             onRenderSuggestionsItem={(props, itemProps) => suggestionItem(props, itemProps, field)}
+    //             onResolveSuggestions={(filter: string, selectedItems?: IExtendedTag[]) => filterSelectedTags(fieldId, filter, selectedItems, field)}
+    //             onChange={(items) => onItemSelected(fieldId, items && items.length ? items[0] : null)}
+    //             onEmptyResolveSuggestions={(selectedItems?: IExtendedTag[]) => filterSelectedTags(fieldId, "", selectedItems, field)}
+    //             onRemoveSuggestion={() => onItemSelected(fieldId, null)}
+    //             getTextFromItem={(item: IExtendedTag) => getTextFromItem(item, field)}
+    //             pickerSuggestionsProps={pickerSuggestionsProps}
+    //             itemLimit={1}
+    //             inputProps={inputProps}
+    //         />
+    //         { field.subtext && <Text styles={{root: { color: "#666666" } }} variant="small">{field.subtext}</Text> }
+    //     </>
+    // );
 
     return (
-        <UserInputModal okButtonDisabled={!Object.keys(actionState.flyOutForm.fields).every(fieldId => !actionState.flyOutForm.fields[fieldId].required || !!formData[fieldId])} noCallBack={noCallBack} yesCallBack={yesCallBack} finally={hideDialog} title={actionState.flyOutForm?.title} show={!!actionState.flyOutForm}>
-            {Object.keys(actionState.flyOutForm.fields).map(fieldId => [ fieldId, actionState.flyOutForm.fields[fieldId]] as [string, FlyOutField]).map(([fieldId, field]) => field.type.toLowerCase() === "lookup" ? lookupField(fieldId, field as FlyOutLookupField) : textField(fieldId, field))}
-        </UserInputModal>
+        // <UserInputModal okButtonDisabled={!Object.keys(actionState.flyOutForm.fields).every(fieldId => !actionState.flyOutForm.fields[fieldId].required || !!formData[fieldId])} noCallBack={noCallBack} yesCallBack={yesCallBack} finally={hideDialog} title={actionState.flyOutForm?.title} show={!!actionState.flyOutForm}>
+        //     {Object.keys(actionState.flyOutForm.fields).map(fieldId => [ fieldId, actionState.flyOutForm.fields[fieldId]] as [string, FlyOutField]).map(([fieldId, field]) => field.type.toLowerCase() === "lookup" ? lookupField(fieldId, field as FlyOutLookupField) : textField(fieldId, field))}
+        // </UserInputModal>
+        <div>Not Implemented Yet</div>
     );
 };

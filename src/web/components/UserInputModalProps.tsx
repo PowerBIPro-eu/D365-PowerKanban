@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Modal } from "@fluentui/react/lib/Modal";
-import { PrimaryButton, DefaultButton } from "@fluentui/react/lib/Button";
+import { Button } from "@fluentui/react-components";
 import { Dialog, DialogType, DialogFooter } from "@fluentui/react/lib/Dialog";
 
 interface UserInputModalProps {
@@ -67,8 +67,8 @@ export class UserInputModal extends React.PureComponent<UserInputModalProps, und
           { this.props.show && this.props.children }
           
           <DialogFooter>
-            <PrimaryButton onClick={ () => this.triggerCallback(true) } disabled={this.props.okButtonDisabled}>Ok</PrimaryButton>
-            <DefaultButton onClick={ () => this.triggerCallback(false) }>Cancel</DefaultButton>
+            <Button onClick={ () => this.triggerCallback(true) } disabled={this.props.okButtonDisabled}>Ok</Button>
+            <Button onClick={ () => this.triggerCallback(false) }>Cancel</Button>
           </DialogFooter>
         </Dialog>
       );

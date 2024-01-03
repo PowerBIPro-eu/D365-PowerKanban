@@ -7,7 +7,6 @@ import { CardForm } from "../domain/CardForm";
 import { useDrop } from "react-dnd";
 import { ItemTypes } from "../domain/ItemTypes";
 import { Option } from "../domain/Metadata";
-import { Notification } from "../domain/Notification";
 import { BoardViewConfig, BoardEntity } from "../domain/BoardViewConfig";
 import { Subscription } from "../domain/Subscription";
 
@@ -18,7 +17,7 @@ interface LaneProps {
     lane: BoardLane;
     metadata: Metadata;
     minWidth?: string;
-    notifications: {[key: string]: Array<Notification>};
+    notifications?: {[key: string]: Array<Notification>};
     refresh: () => Promise<void>;
     searchText: string;
     selectedSecondaryForm?: CardForm;
@@ -60,7 +59,6 @@ const LaneRender = (props: LaneProps) => {
     }
 
     const mapDataToTile = ((d: any) => <Tile
-      notifications={props.notifications[d[props.metadata.PrimaryIdAttribute]] ?? []}
       dndType={props.dndType}
       laneOption={props.lane.option}
       borderColor={borderColor}

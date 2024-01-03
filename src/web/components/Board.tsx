@@ -504,7 +504,7 @@ export const Board = () => {
     .map(filterForSearchText)
     .map(filterForNotifications)
     .map(d => <Lane
-      notifications={appState.notifications}
+      // notifications={appState.notifications}
       key={`lane_${d.option?.Value ?? "fallback"}`}
       cardForm={actionState.selectedForm}
       metadata={configState.metadata}
@@ -531,19 +531,19 @@ export const Board = () => {
     return [ primaryRecordIds.filter(id => appState.notifications && appState.notifications[id] && appState.notifications[id].length), secondaryRecordIds.filter(id => appState.notifications && appState.notifications[id] && appState.notifications[id].length) ];
   }, [ appState.boardData, appState.secondaryData, appState.notifications ]);
 
-  const onRenderItem = (item: IOverflowSetItemProps): JSX.Element => {
-    if (item.onRender) {
-      return item.onRender(item);
-    }
-    return (
-      <CommandBarButton
-        role="menuitem"
-        iconProps={{ iconName: item.icon }}
-        menuProps={item.subMenuProps}
-        text={item.name}
-      />
-    );
-  };
+  // const onRenderItem = (item: IOverflowSetItemProps): JSX.Element => {
+  //   if (item.onRender) {
+  //     return item.onRender(item);
+  //   }
+  //   return (
+  //     <CommandBarButton
+  //       role="menuitem"
+  //       iconProps={{ iconName: item.icon }}
+  //       menuProps={item.subMenuProps}
+  //       text={item.name}
+  //     />
+  //   );
+  // };
 
   const dropdownStyles: Partial<IDropdownStyles> = {
     root: {
@@ -646,166 +646,166 @@ export const Board = () => {
     }
   };
 
-  const renderMenuList = React.useCallback(
-    (menuListProps: IContextualMenuListProps, defaultRender: IRenderFunction<IContextualMenuListProps>) => {
-      return (
-        <div>
-          <div style={{ borderBottom: '1px solid #ccc' }}>
-            <Pivot>
-              { actionState?.selectedForm?.parsed &&
-                <PivotItem headerText="Primary Filters">
-                  <Stack>
-                    { primaryFilters.map(f => <Dropdown label={f.displayName} options={[]} />) }
-                  </Stack>
-                </PivotItem>
-              }
-              { actionState?.selectedSecondaryForm?.parsed &&
-                <PivotItem headerText="Secondary Filters">
-                  <Stack>
-                  { secondaryFilters.map(f => <Dropdown label={f.displayName} options={[]} />) }
-                  </Stack>
-                </PivotItem>
-              }
-            </Pivot>
-          </div>
-          {defaultRender(menuListProps)}
-        </div>
-      );
-    },
-    [primaryFilters, secondaryFilters, actionState?.selectedForm, actionState?.selectedSecondaryForm],
-  );
+  // const renderMenuList = React.useCallback(
+  //   (menuListProps: IContextualMenuListProps, defaultRender: IRenderFunction<IContextualMenuListProps>) => {
+  //     return (
+  //       <div>
+  //         <div style={{ borderBottom: '1px solid #ccc' }}>
+  //           <Pivot>
+  //             { actionState?.selectedForm?.parsed &&
+  //               <PivotItem headerText="Primary Filters">
+  //                 <Stack>
+  //                   { primaryFilters.map(f => <Dropdown label={f.displayName} options={[]} />) }
+  //                 </Stack>
+  //               </PivotItem>
+  //             }
+  //             { actionState?.selectedSecondaryForm?.parsed &&
+  //               <PivotItem headerText="Secondary Filters">
+  //                 <Stack>
+  //                 { secondaryFilters.map(f => <Dropdown label={f.displayName} options={[]} />) }
+  //                 </Stack>
+  //               </PivotItem>
+  //             }
+  //           </Pivot>
+  //         </div>
+  //         {defaultRender(menuListProps)}
+  //       </div>
+  //     );
+  //   },
+  //   [primaryFilters, secondaryFilters, actionState?.selectedForm, actionState?.selectedSecondaryForm],
+  // );
 
-  const menuProps = React.useMemo(
-    () => ({
-      onRenderMenuList: renderMenuList,
-      title: 'Actions',
-      shouldFocusOnMount: true,
-      items
-    }),
-    [primaryFilters, secondaryFilters, renderMenuList],
-  );
+  // const menuProps = React.useMemo(
+  //   () => ({
+  //     onRenderMenuList: renderMenuList,
+  //     title: 'Actions',
+  //     shouldFocusOnMount: true,
+  //     items
+  //   }),
+  //   [primaryFilters, secondaryFilters, renderMenuList],
+  // );
 
-  const navItems: Array<IOverflowSetItemProps> = [
-    {
-      key: 'configSelector',
-      onRender: () => <IconButton iconProps={{ iconName: "Waffle" }} styles={navItemStyles} onClick={openConfigSelector}></IconButton>
-    },
-    {
-      key: 'formSelector',
-      onRender: () => <Dropdown
-        styles={dropdownStyles}
-        id="formSelector"
-        onChange={setForm}
-        placeholder="Select form"
-        selectedKey={actionState.selectedForm?.formid}
-        options={ cardForms?.map(f => ({ key: f.formid, text: f.name})) }
-      />
-    },
-    (!configState.config || !configState.config.secondaryEntity
-    ? null
-    : {
-      key: 'displaySelector',
-      onRender: () => <Dropdown
-        styles={navItemStyles}
-        id="displaySelector"
-        onChange={setDisplayType}
-        selectedKey={displayState}
-        options={ [ { key: "simple", text: "Simple"}, { key: "advanced", text: "Advanced"} ] }
-      />
-      }
-    ),
-    (displayState === "advanced"
-    ? {
-      key: 'secondaryViewSelector',
-      onRender: () => <Dropdown
-        styles={dropdownStyles}
-        id="secondaryViewSelector"
-        onChange={setSecondaryView}
-        placeholder="Select view"
-        selectedKey={actionState.selectedSecondaryView?.savedqueryid}
-        options={secondaryViews?.map(v => ({ key: v.savedqueryid, text: v.name}))
-        }
-      />
-      }
-    : null
-    ),
-    (displayState === "advanced"
-    ? {
-      key: 'secondaryFormSelector',
-      onRender: () => <Dropdown
-        styles={navItemStyles}
-        id="secondaryFormSelector"
-        onChange={setSecondaryForm}
-        placeholder="Select form"
-        selectedKey={actionState.selectedSecondaryForm?.formid}
-        options={ secondaryCardForms?.map(f => ({ key: f.formid, text: f.name})) }
-      />
-      }
-    : null
-    ),
-    {
-      key: 'filters',
-      onRender: () => <IconButton iconProps={{ iconName: (primaryFilters.some(f => f.selected) || secondaryFilters.some(f => f.selected)) ? "FilterSolid" : "Filter" }} styles={navItemStyles} menuProps={menuProps}></IconButton>
-    },
-    {
-      key: 'primaryStatusFilter',
-      onRender: () =>  <DefaultButton styles={navItemStyles} id="stateFilterSelector" text="Primary Lane Filter" menuProps={primaryStateFilter} />
-    },
-    (displayState !== "advanced"
-    ? null
-    : {
-        key: 'secondaryStatusFilter',
-        onRender: () =>  <DefaultButton styles={navItemStyles} id="secondaryStateFilterSelector" text="Secondary Lane Filter" menuProps={secondaryStateFilter} />
-      }
-    ),
-    ( (configState.config?.primaryEntity.subscriptionLookup && configState.config?.primaryEntity.notificationLookup) || (configState.config?.secondaryEntity && configState.config?.secondaryEntity.subscriptionLookup && configState.config?.secondaryEntity.notificationLookup)
-      ? {
-        key: 'notificationIndicator',
-        onRender: () =>  <IconButton onClick={toggleShowNotificationRecordsOnly} iconProps={{ iconName: showNotificationRecordsOnly ? "RingerSolid" : "Ringer", style: { color: (currentNotifications[0].length || currentNotifications[1].length) ? "red" : "inherit" } }} styles={navItemStyles}  />
-      }
-      : null
-    ),
-    {
-      key: 'searchBox',
-      onRender: () => <SearchBox styles={navItemStyles} placeholder="Search..." onClear={onEmptySearch} onSearch={onSearch} />
-    },
-    {
-      key: 'workIndicator',
-      onRender: () => !!actionState.workIndicator && <Spinner styles={{root: { marginLeft: "auto" }}} label="Working..." ariaLive="assertive" labelPosition="right" />
-    }
-  ];
+  // const navItems: Array<IOverflowSetItemProps> = [
+  //   {
+  //     key: 'configSelector',
+  //     onRender: () => <IconButton iconProps={{ iconName: "Waffle" }} styles={navItemStyles} onClick={openConfigSelector}></IconButton>
+  //   },
+  //   {
+  //     key: 'formSelector',
+  //     onRender: () => <Dropdown
+  //       styles={dropdownStyles}
+  //       id="formSelector"
+  //       onChange={setForm}
+  //       placeholder="Select form"
+  //       selectedKey={actionState.selectedForm?.formid}
+  //       options={ cardForms?.map(f => ({ key: f.formid, text: f.name})) }
+  //     />
+  //   },
+  //   (!configState.config || !configState.config.secondaryEntity
+  //   ? null
+  //   : {
+  //     key: 'displaySelector',
+  //     onRender: () => <Dropdown
+  //       styles={navItemStyles}
+  //       id="displaySelector"
+  //       onChange={setDisplayType}
+  //       selectedKey={displayState}
+  //       options={ [ { key: "simple", text: "Simple"}, { key: "advanced", text: "Advanced"} ] }
+  //     />
+  //     }
+  //   ),
+  //   (displayState === "advanced"
+  //   ? {
+  //     key: 'secondaryViewSelector',
+  //     onRender: () => <Dropdown
+  //       styles={dropdownStyles}
+  //       id="secondaryViewSelector"
+  //       onChange={setSecondaryView}
+  //       placeholder="Select view"
+  //       selectedKey={actionState.selectedSecondaryView?.savedqueryid}
+  //       options={secondaryViews?.map(v => ({ key: v.savedqueryid, text: v.name}))
+  //       }
+  //     />
+  //     }
+  //   : null
+  //   ),
+  //   (displayState === "advanced"
+  //   ? {
+  //     key: 'secondaryFormSelector',
+  //     onRender: () => <Dropdown
+  //       styles={navItemStyles}
+  //       id="secondaryFormSelector"
+  //       onChange={setSecondaryForm}
+  //       placeholder="Select form"
+  //       selectedKey={actionState.selectedSecondaryForm?.formid}
+  //       options={ secondaryCardForms?.map(f => ({ key: f.formid, text: f.name})) }
+  //     />
+  //     }
+  //   : null
+  //   ),
+  //   {
+  //     key: 'filters',
+  //     onRender: () => <IconButton iconProps={{ iconName: (primaryFilters.some(f => f.selected) || secondaryFilters.some(f => f.selected)) ? "FilterSolid" : "Filter" }} styles={navItemStyles} menuProps={menuProps}></IconButton>
+  //   },
+  //   {
+  //     key: 'primaryStatusFilter',
+  //     onRender: () =>  <DefaultButton styles={navItemStyles} id="stateFilterSelector" text="Primary Lane Filter" menuProps={primaryStateFilter} />
+  //   },
+  //   (displayState !== "advanced"
+  //   ? null
+  //   : {
+  //       key: 'secondaryStatusFilter',
+  //       onRender: () =>  <DefaultButton styles={navItemStyles} id="secondaryStateFilterSelector" text="Secondary Lane Filter" menuProps={secondaryStateFilter} />
+  //     }
+  //   ),
+  //   ( (configState.config?.primaryEntity.subscriptionLookup && configState.config?.primaryEntity.notificationLookup) || (configState.config?.secondaryEntity && configState.config?.secondaryEntity.subscriptionLookup && configState.config?.secondaryEntity.notificationLookup)
+  //     ? {
+  //       key: 'notificationIndicator',
+  //       onRender: () =>  <IconButton onClick={toggleShowNotificationRecordsOnly} iconProps={{ iconName: showNotificationRecordsOnly ? "RingerSolid" : "Ringer", style: { color: (currentNotifications[0].length || currentNotifications[1].length) ? "red" : "inherit" } }} styles={navItemStyles}  />
+  //     }
+  //     : null
+  //   ),
+  //   {
+  //     key: 'searchBox',
+  //     onRender: () => <SearchBox styles={navItemStyles} placeholder="Search..." onClear={onEmptySearch} onSearch={onSearch} />
+  //   },
+  //   {
+  //     key: 'workIndicator',
+  //     onRender: () => !!actionState.workIndicator && <Spinner styles={{root: { marginLeft: "auto" }}} label="Working..." ariaLive="assertive" labelPosition="right" />
+  //   }
+  // ];
 
-  const onRenderOverflowButton = (overflowItems: any[] | undefined): JSX.Element => {
-    const buttonStyles: Partial<IButtonStyles> = {
-      root: {
-        minWidth: 0,
-        padding: '0 4px',
-        alignSelf: 'stretch',
-        height: 'auto',
-      },
-    };
+  // const onRenderOverflowButton = (overflowItems: any[] | undefined): JSX.Element => {
+  //   const buttonStyles: Partial<IButtonStyles> = {
+  //     root: {
+  //       minWidth: 0,
+  //       padding: '0 4px',
+  //       alignSelf: 'stretch',
+  //       height: 'auto',
+  //     },
+  //   };
     
-    return (
-      <CommandBarButton
-        ariaLabel="More items"
-        role="menuitem"
-        styles={buttonStyles}
-        menuIconProps={{ iconName: 'More' }}
-        menuProps={{ items: overflowItems! }}
-      />
-    );
-  };
+  //   return (
+  //     <CommandBarButton
+  //       ariaLabel="More items"
+  //       role="menuitem"
+  //       styles={buttonStyles}
+  //       menuIconProps={{ iconName: 'More' }}
+  //       menuProps={{ items: overflowItems! }}
+  //     />
+  //   );
+  // };
 
   return (
     <div style={{height: "100%", display: "flex", flexDirection: "column" }}>
       { customStyle && <style>{customStyle}</style> }
-      <OverflowSet
+      {/* <OverflowSet
         role="menubar"
         styles={{root: {backgroundColor: "#f8f9fa"}}}
         onRenderItem={onRenderItem}
         onRenderOverflowButton={onRenderOverflowButton}
         items={navItems.filter(i => !!i)}
-      />
+      /> */}
       <DndContainer>
         { displayState === "advanced" &&
           <div id="advancedContainer" style={{ display: "flex", flexDirection: "column", overflow: "auto" }}>

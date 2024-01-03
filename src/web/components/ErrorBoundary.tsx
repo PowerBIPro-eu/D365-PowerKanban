@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Dialog, DialogType, DialogFooter } from "@fluentui/react/lib/Dialog";
-import { PrimaryButton, DefaultButton } from "@fluentui/react/lib/Button";
+import { Button } from "@fluentui/react-components";
 import { Modal, IDragOptions } from "@fluentui/react/lib/Modal";
 import { IIconProps } from "@fluentui/react/lib/Icon";
 import { ContextualMenu } from "@fluentui/react/lib/ContextualMenu";
@@ -83,7 +83,7 @@ export class ErrorBoundary extends React.Component<any, ErrorBoundaryState> {
                     <p>Please copy below error information and open an issue <a href="https://github.com/XRM-OSS/D365-PowerKanban/issues">here</a></p>
                     <p>{this.state.error.message}</p>
                     <p>{this.state.error.stack}</p>
-                    <DefaultButton onClick={this.resetError}>Restore Board</DefaultButton>
+                    <Button onClick={this.resetError}>Restore Board</Button>
                 </div>
             </Modal>
         );

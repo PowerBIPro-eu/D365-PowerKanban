@@ -65,4 +65,4 @@
 
         return false;
     }
-})(window.XOSS_ApplicationRibbon_GlobalNotifications = window.XOSS_ApplicationRibbon_GlobalNotifications || {});
+})(window.Xoss_ApplicationRibbon_GlobalNotifications = window.Xoss_ApplicationRibbon_GlobalNotifications || {});

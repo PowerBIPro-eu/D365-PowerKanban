@@ -18,16 +18,16 @@ export interface AppProps
 
 export const App: React.FC<AppProps> = (props) => {
   return (
-    <ErrorBoundary>
+    // <ErrorBoundary>
       <AppStateProvider primaryDataIds={props.primaryDataIds} primaryEntityId={props.primaryEntityId} pcfContext={props.pcfContext}>
         <ActionStateProvider>
           <ConfigStateProvider appId={props.appId} configId={props.configId} primaryEntityLogicalName={props.primaryEntityLogicalName}>
-            <ErrorBoundary>
+            {/* <ErrorBoundary> */}
               <SplitView primaryDataIds={props.primaryDataIds} />
-            </ErrorBoundary>
+            {/* </ErrorBoundary> */}
           </ConfigStateProvider>
         </ActionStateProvider>
       </AppStateProvider>
-    </ErrorBoundary>
+    // </ErrorBoundary>
   );
 };

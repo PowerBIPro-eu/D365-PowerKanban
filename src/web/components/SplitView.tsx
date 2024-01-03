@@ -3,7 +3,6 @@ import { Modal } from "@fluentui/react/lib/Modal";
 import { ProgressIndicator } from "@fluentui/react/lib/ProgressIndicator";
 import { Board } from "./Board";
 import { SideBySideForm } from "./SideBySideForm";
-import { NotificationList } from "./NotificationList";
 import { UserInputModal } from "./UserInputModalProps";
 import { ExternalForm } from "./ExternalForm";
 import { useActionState, DisplayType } from "../domain/ActionState";
@@ -41,11 +40,6 @@ export const SplitView = (props: SplitViewProps) => {
             { !!actionState.selectedRecord && actionState.selectedRecordDisplayType === DisplayType.recordForm &&
                 <div style={{minWidth: "400px", flex: "1" }}>
                     <SideBySideForm />
-                </div>
-            }
-            { !!actionState.selectedRecord && actionState.selectedRecordDisplayType === DisplayType.notifications &&
-                <div style={{minWidth: "400px", flex: "1" }}>
-                    <NotificationList />
                 </div>
             }
         </div>
