@@ -1,30 +1,35 @@
 import * as React from "react";
-import { BoardLane } from "./BoardLane";
-import { Subscription } from "./Subscription";
-import { Notification } from "./Notification";
-import { AppProps } from "../components/App";
 import { IInputs } from "../PowerKanban/generated/ManifestTypes";
+import { AppProps } from "../components/App";
+import { BoardLane } from "./BoardLane";
+import { Notification } from "./Notification";
+import { Subscription } from "./Subscription";
 
-type Action = { type: "setBoardData", payload: Array<BoardLane> }
-    | { type: "setSecondaryData", payload: Array<any> }
-    | { type: "setSubscriptions", payload: {[key: string]: Array<Subscription>}}
-    | { type: "setNotifications", payload: {[key: string]: Array<Notification>}}
-    | { type: "setPrimaryDataIds", payload: Array<string> };
+type Action =
+    | { type: "setBoardData"; payload: Array<BoardLane> }
+    | { type: "setSecondaryData"; payload: Array<any> }
+    | {
+          type: "setSubscriptions";
+          payload: { [key: string]: Array<Subscription> };
+      }
+    | {
+          type: "setNotifications";
+          payload: { [key: string]: Array<Notification> };
+      }
+    | { type: "setPrimaryDataIds"; payload: Array<string> };
 
 export type AppStateDispatch = (action: Action) => void;
 
 export type AppStateProps = {
     boardData?: Array<BoardLane>;
     secondaryData?: Array<BoardLane>;
-    subscriptions?: {[key: string]: Array<Subscription>};
-    notifications?: {[key: string]: Array<Notification>};
+    subscriptions?: { [key: string]: Array<Subscription> };
+    notifications?: { [key: string]: Array<Notification> };
     primaryDataIds?: Array<string>;
     primaryEntityId?: string;
     pcfContext?: ComponentFramework.Context<IInputs>;
-};
-
-type AppContextProps = {
-    children: React.ReactNode;
+    aditionalData?: any;
+    configViewName?: string;
 };
 
 function stateReducer(state: AppStateProps, action: Action): AppStateProps {
@@ -48,7 +53,9 @@ function stateReducer(state: AppStateProps, action: Action): AppStateProps {
 }
 
 const AppState = React.createContext<AppStateProps | undefined>(undefined);
-const AppDispatch = React.createContext<AppStateDispatch | undefined>(undefined);
+const AppDispatch = React.createContext<AppStateDispatch | undefined>(
+    undefined
+);
 
 export const AppStateProvider: React.FC<AppProps> = (props) => {
     const [state, dispatch] = React.useReducer(stateReducer, props ?? {});
@@ -60,7 +67,7 @@ export const AppStateProvider: React.FC<AppProps> = (props) => {
             </AppDispatch.Provider>
         </AppState.Provider>
     );
-}
+};
 
 export function useAppState() {
     const context = React.useContext(AppState);
@@ -82,6 +89,6 @@ export function useAppDispatch() {
     return context;
 }
 
-export function useAppContext(): [ AppStateProps, AppStateDispatch ] {
-    return [ useAppState(), useAppDispatch() ];
+export function useAppContext(): [AppStateProps, AppStateDispatch] {
+    return [useAppState(), useAppDispatch()];
 }

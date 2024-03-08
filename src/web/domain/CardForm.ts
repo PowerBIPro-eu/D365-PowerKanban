@@ -31,29 +31,36 @@ export interface CardForm {
 }
 
 const parseSegment = (segment: HTMLElement): CardSegment => {
-    const rows: Array<CardRow> = Array.from(segment.getElementsByTagName("row"))
-    .map(r =>
-        ({ cells: Array.from(r.getElementsByTagName("cell"))
-            .map(c => {
+    const rows: Array<CardRow> = Array.from(
+        segment.getElementsByTagName("row")
+    ).map((r) => ({
+        cells: Array.from(r.getElementsByTagName("cell"))
+            .map((c) => {
                 const controls = Array.from(c.getElementsByTagName("control"));
 
                 if (!controls.length) {
-                return undefined;
+                    return undefined;
                 }
 
                 const control = controls[0];
 
                 return {
                     field: control.getAttribute("datafieldname"),
-                    labels: Array.from((control.previousSibling as Element).getElementsByTagName("label")).map(l => ({ label: l.getAttribute("description"), lcid: l.getAttribute("languagecode") }))
+                    labels: Array.from(
+                        (
+                            control.previousSibling as Element
+                        ).getElementsByTagName("label")
+                    ).map((l) => ({
+                        label: l.getAttribute("description"),
+                        lcid: l.getAttribute("languagecode"),
+                    })),
                 };
             })
-        .filter(c => c)
-        })
-    );
+            .filter((c) => c),
+    }));
 
     return {
-        rows
+        rows,
     };
 };
 
@@ -61,18 +68,26 @@ export const parseCardForm = (form: CardForm): ParsedCard => {
     const parser = new DOMParser();
     const xml = parser.parseFromString(form.formxml, "application/xml");
 
-    const sections = Array.from(xml.documentElement.getElementsByTagName("section"));
+    const sections = Array.from(
+        xml.documentElement.getElementsByTagName("section")
+    );
 
-    const header = sections.find(s => s.getAttribute("name") === "CardHeader");
-    const body = sections.find(s => s.getAttribute("name") === "CardDetails");
-    const footer = sections.find(s => s.getAttribute("name") === "CardFooter");
+    const header = sections.find(
+        (s) => s.getAttribute("name") === "CardHeader"
+    );
+    const body = sections.find((s) => s.getAttribute("name") === "CardDetails");
+    const footer = sections.find(
+        (s) => s.getAttribute("name") === "CardFooter"
+    );
 
-    const order = xml.documentElement.getElementsByTagName("DisplayConditions")[0]?.getAttribute("Order");
+    const order = xml.documentElement
+        .getElementsByTagName("DisplayConditions")[0]
+        ?.getAttribute("Order");
 
     return {
         header: parseSegment(header),
         body: parseSegment(body),
         footer: parseSegment(footer),
-        order: order != null ? parseInt(order) : 0
+        order: order != null ? parseInt(order) : 0,
     };
 };

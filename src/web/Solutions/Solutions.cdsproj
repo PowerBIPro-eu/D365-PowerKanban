@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <SolutionPackageType>Both</SolutionPackageType>
+    <SolutionPackageType>Managed</SolutionPackageType>
   </PropertyGroup>
   
   <ItemGroup>

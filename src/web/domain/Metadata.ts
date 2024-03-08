@@ -66,7 +66,24 @@ export interface Attribute {
     MetadataId: string;
     HasChanged?: any;
     AttributeOf: string;
-    AttributeType: "String" | "Integer" | "Lookup" | "Uniqueidentifier" | "Boolean" | "Double" | "Virtual" | "EntityName" | "Picklist" | "Customer" | "DateTime" | "Decimal" | "BigInt" | "Owner" | "State" | "Memo" | "Status";
+    AttributeType:
+        | "String"
+        | "Integer"
+        | "Lookup"
+        | "Uniqueidentifier"
+        | "Boolean"
+        | "Double"
+        | "Virtual"
+        | "EntityName"
+        | "Picklist"
+        | "Customer"
+        | "DateTime"
+        | "Decimal"
+        | "BigInt"
+        | "Owner"
+        | "State"
+        | "Memo"
+        | "Status";
     ColumnNumber: number;
     DeprecatedVersion?: any;
     IntroducedVersion: string;
@@ -122,9 +139,9 @@ export interface Attribute {
     MinValue?: number;
     Targets: string[];
     OptionSet: {
-        Options: Array<Option>,
-        TrueOption: Option,
-        FalseOption: Option
+        Options: Array<Option>;
+        TrueOption: Option;
+        FalseOption: Option;
     };
 }
 

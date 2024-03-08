@@ -1,16 +1,20 @@
 import * as React from "react";
 import { BoardViewConfig } from "./BoardViewConfig";
-import { Metadata, Attribute } from "./Metadata";
 import { CardForm } from "./CardForm";
+import { Attribute, Metadata } from "./Metadata";
 
-type Action = { type: "setAppId", payload: string }
-    | { type: "setConfigId", payload: string }
-    | { type: "setConfig", payload: BoardViewConfig }
-    | { type: "setMetadata", payload: Metadata }
-    | { type: "setSeparatorMetadata", payload: Attribute }
-    | { type: "setSecondaryMetadata", payload: { entity: string; data: Metadata } }
-    | { type: "setSecondarySeparatorMetadata", payload: Attribute }
-    | { type: "setNotificationForm", payload: CardForm };
+type Action =
+    | { type: "setAppId"; payload: string }
+    | { type: "setConfigId"; payload: string }
+    | { type: "setConfig"; payload: BoardViewConfig }
+    | { type: "setMetadata"; payload: Metadata }
+    | { type: "setSeparatorMetadata"; payload: Attribute }
+    | {
+          type: "setSecondaryMetadata";
+          payload: { entity: string; data: Metadata };
+      }
+    | { type: "setSecondarySeparatorMetadata"; payload: Attribute }
+    | { type: "setNotificationForm"; payload: CardForm };
 
 export type ConfigDispatch = (action: Action) => void;
 
@@ -20,24 +24,34 @@ export type ConfigStateProps = {
     primaryEntityLogicalName?: string;
     config?: BoardViewConfig;
     metadata?: Metadata;
-    secondaryMetadata?: {[key: string]: Metadata};
+    secondaryMetadata?: { [key: string]: Metadata };
     notificationForm?: CardForm;
     separatorMetadata?: Attribute;
     secondarySeparatorMetadata?: Attribute;
     stateMetadata?: Attribute;
 };
 
-const parseStateTransitions = (transitionXml: string): Array<{ source: number; to: number }> => {
+const parseStateTransitions = (
+    transitionXml: string
+): Array<{ source: number; to: number }> => {
     if (!transitionXml) {
         return undefined;
     }
 
     const parser = new DOMParser();
     const xml = parser.parseFromString(transitionXml, "application/xml");
-    return Array.from(xml.documentElement.getElementsByTagName("allowedtransition")).map(t => ({ source: parseInt(t.getAttribute("sourcestatusid")), to: parseInt(t.getAttribute("tostatusid"))} ));
+    return Array.from(
+        xml.documentElement.getElementsByTagName("allowedtransition")
+    ).map((t) => ({
+        source: parseInt(t.getAttribute("sourcestatusid")),
+        to: parseInt(t.getAttribute("tostatusid")),
+    }));
 };
 
-function stateReducer(state: ConfigStateProps, action: Action): ConfigStateProps {
+function stateReducer(
+    state: ConfigStateProps,
+    action: Action
+): ConfigStateProps {
     switch (action.type) {
         case "setAppId": {
             return { ...state, appId: action.payload };
@@ -53,16 +67,34 @@ function stateReducer(state: ConfigStateProps, action: Action): ConfigStateProps
         }
         case "setSeparatorMetadata": {
             if (action.payload?.OptionSet?.Options) {
-                action.payload.OptionSet.Options = action.payload.OptionSet.Options.map(o => ({...o, _parsedTransitionData: parseStateTransitions(o.TransitionData)}));
+                action.payload.OptionSet.Options =
+                    action.payload.OptionSet.Options.map((o) => ({
+                        ...o,
+                        _parsedTransitionData: parseStateTransitions(
+                            o.TransitionData
+                        ),
+                    }));
             }
             return { ...state, separatorMetadata: action.payload };
         }
         case "setSecondaryMetadata": {
-            return { ...state, secondaryMetadata: {...state.secondaryMetadata, [action.payload.entity]: action.payload.data } };
+            return {
+                ...state,
+                secondaryMetadata: {
+                    ...state.secondaryMetadata,
+                    [action.payload.entity]: action.payload.data,
+                },
+            };
         }
         case "setSecondarySeparatorMetadata": {
             if (action.payload?.OptionSet?.Options) {
-                action.payload.OptionSet.Options = action.payload.OptionSet.Options.map(o => ({...o, _parsedTransitionData: parseStateTransitions(o.TransitionData)}));
+                action.payload.OptionSet.Options =
+                    action.payload.OptionSet.Options.map((o) => ({
+                        ...o,
+                        _parsedTransitionData: parseStateTransitions(
+                            o.TransitionData
+                        ),
+                    }));
             }
 
             return { ...state, secondarySeparatorMetadata: action.payload };
@@ -73,8 +105,12 @@ function stateReducer(state: ConfigStateProps, action: Action): ConfigStateProps
     }
 }
 
-const ConfigState = React.createContext<ConfigStateProps | undefined>(undefined);
-const ConfigDispatch = React.createContext<ConfigDispatch | undefined>(undefined);
+const ConfigState = React.createContext<ConfigStateProps | undefined>(
+    undefined
+);
+const ConfigDispatch = React.createContext<ConfigDispatch | undefined>(
+    undefined
+);
 
 export const ConfigStateProvider: React.FC<ConfigStateProps> = (props) => {
     const [state, dispatch] = React.useReducer(stateReducer, props ?? {});
@@ -102,12 +138,14 @@ export const useConfigDispatch = () => {
     const context = React.useContext(ConfigDispatch);
 
     if (!context) {
-        throw new Error("useConfigDispatch must be used within a state provider!");
+        throw new Error(
+            "useConfigDispatch must be used within a state provider!"
+        );
     }
 
     return context;
 };
 
-export const useConfigContext = (): [ ConfigStateProps, ConfigDispatch ] => {
-    return [ useConfigState(), useConfigDispatch() ];
+export const useConfigContext = (): [ConfigStateProps, ConfigDispatch] => {
+    return [useConfigState(), useConfigDispatch()];
 };

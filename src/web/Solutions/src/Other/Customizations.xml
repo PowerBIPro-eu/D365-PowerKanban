@@ -4,7 +4,7 @@
   <Roles />
   <Workflows />
   <FieldSecurityProfiles />
-  <Templates />
+<Templates />
   <EntityMaps />
   <EntityRelationships />
   <OrganizationSettings />
