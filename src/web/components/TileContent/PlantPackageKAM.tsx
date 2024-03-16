@@ -17,27 +17,127 @@ import {
     Open16Regular,
 } from "@fluentui/react-icons";
 import { FC } from "react";
+import { FetchUserAvatar } from "../../domain/FetchUserInfo";
+import * as WebApiClient from "xrm-webapi-client";
 
 type Props = {
     styles: any;
     data: any;
-    completions: any;
     openInline: () => void;
+    primaryAttriute: string;
+    bipPrices: any;
+    costSheets: any;
 };
 
 const PlantPackageKam: FC<Props> = ({
     styles,
     data,
-    completions,
     openInline,
+    primaryAttriute,
+    bipPrices,
+    costSheets,
 }) => {
+    const [avatars, setAvatars] = React.useState<any>({});
+    const [customer, setCustomer] = React.useState<any>("");
+    const [completions, setCompletions] = React.useState<any>({});
+
+    const discardRecord: (id: string) => void = (id) => {
+        WebApiClient.Update({
+            entityName: "ddsol_cs_packageplant",
+            entityId: id,
+            entity: { ddsol_sts_plantpackage: 717170006 },
+        });
+    };
+
+    const getCustomer = async () => {
+        try {
+            const project = await WebApiClient.Retrieve({
+                entityName: "ddsol_cs_project",
+                queryParams: `?$filter=ddsol_cs_projectid eq '${data["_ddsol_project_value"]}'&$expand=ddsol_customer`,
+            });
+            setCustomer(
+                project?.value[0]?.ddsol_customer?.ddsol_customername ?? ""
+            );
+        } catch (error) {
+            console.error("Error retrieving data:", error);
+        }
+    };
+
+    React.useEffect(() => {
+        let purOfficer = FetchUserAvatar(
+            data["_ddsol_role_purchasingofficer_value"]
+        );
+        let costEngineer = FetchUserAvatar(
+            data["_ddsol_role_costingengineer_value"]
+        );
+        console.log("pople: ", purOfficer, costEngineer);
+        setAvatars({
+            purOfficer: { src: purOfficer },
+            costEngineer: { src: costEngineer },
+        });
+
+        getCustomer();
+
+        let bips = bipPrices?.value?.filter(
+            (bipPrice: any) =>
+                bipPrice.ddsol_cs_packageplant_ddsol_cs_packageplantid ==
+                data[primaryAttriute]
+        );
+        let costingSheets = costSheets?.value?.filter(
+            (costingSheet: any) =>
+                costingSheet.ddsol_cs_packageplant_ddsol_cs_packageplantid ==
+                data[primaryAttriute]
+        );
+        setCompletions({
+            bipsTotal:
+                bips
+                    ?.map((entity: any) => entity.count)
+                    ?.reduce((a: any, b: any) => a + b, 0) ?? 0,
+            bipsDone:
+                bips
+                    ?.filter(
+                        (entity: any) =>
+                            entity?.ddsol_sts_progress === 717170001
+                    )
+                    ?.map((entity: any) => entity.count)
+                    ?.reduce((a: any, b: any) => a + b, 0) ?? 0,
+            csTotal:
+                costingSheets
+                    ?.map((entity: any) => entity.count)
+                    ?.reduce((a: any, b: any) => a + b, 0) ?? 0,
+            csDone:
+                costingSheets
+                    ?.filter(
+                        (entity: any) =>
+                            entity?.ddsol_sts_costingsheet === 717170002 ||
+                            entity?.ddsol_sts_costingsheet === 717170004
+                    )
+                    ?.map((entity: any) => entity.count)
+                    ?.reduce((a: any, b: any) => a + b, 0) ?? 0,
+        });
+    }, []);
     return (
         <>
             <CardHeader
                 header={
-                    <Subtitle2>
-                        <b>{data.ddsol_name}</b>
-                    </Subtitle2>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        <Subtitle2>
+                            <b>{data.ddsol_name}</b>
+                        </Subtitle2>
+                        <Badge appearance="tint" color="subtle">
+                            {
+                                data[
+                                    "ddsol_sts_plantpackage@OData.Community.Display.V1.FormattedValue"
+                                ]
+                            }
+                        </Badge>
+                    </div>
                 }
             />
             <header
@@ -52,7 +152,7 @@ const PlantPackageKam: FC<Props> = ({
                     }
                 </Badge>
                 <Badge appearance="filled" color="brand">
-                    Customer
+                    {customer}
                 </Badge>
                 <Badge
                     color="brand"
@@ -70,33 +170,56 @@ const PlantPackageKam: FC<Props> = ({
                 </Badge>
             </header>
 
-            <div className="people" style={{ display: "flex" }}>
-                <div style={{ flex: "50%" }}>
-                    <Caption1>Purchasing Officer</Caption1>
+            <div
+                className="people"
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    width: "100%",
+                }}
+            >
+                <div style={{ width: "40%" }}>
+                    {/* <Caption1>Purchasing Officer</Caption1> */}
                     <Persona
-                        name="Kevin Sturgis"
-                        secondaryText="Available"
-                        presence={{ status: "available" }}
+                        name={
+                            data[
+                                "_ddsol_role_purchasingofficer_value@OData.Community.Display.V1.FormattedValue"
+                            ]
+                        }
+                        secondaryText="Purchasing Officer"
                         avatar={{
-                            image: {
-                                src: "https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-react-assets/persona-male.png",
-                            },
+                            image: avatars?.purOfficer,
                         }}
                     />
                 </div>
-                <div style={{ flex: "50%" }}>
-                    <Caption1>Costing Engineer</Caption1>
+                <div style={{ width: "40%" }}>
+                    {/* <Caption1>Costing Engineer</Caption1> */}
                     <Persona
-                        name="Kevin Sturgis"
-                        secondaryText="Available"
-                        presence={{ status: "available" }}
+                        name={
+                            data[
+                                "_ddsol_role_costingengineer_value@OData.Community.Display.V1.FormattedValue"
+                            ]
+                        }
+                        secondaryText="Costing Engineer"
                         avatar={{
-                            image: {
-                                src: "https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-react-assets/persona-male.png",
-                            },
+                            image: avatars?.costEngineer,
                         }}
                     />
                 </div>
+                {/* <div>
+                    {" "}
+                    <Text block weight="semibold">
+                        Package Plant Status
+                    </Text>
+                    <Caption1 block className={styles.caption}>
+                        {
+                            data[
+                                "ddsol_sts_plantpackage@OData.Community.Display.V1.FormattedValue"
+                            ]
+                        }
+                    </Caption1>
+                </div> */}
             </div>
 
             <div
@@ -110,55 +233,10 @@ const PlantPackageKam: FC<Props> = ({
                         display: "flex",
                         flexDirection: "row",
                         justifyContent: "space-between",
+                        width: "100%",
                     }}
                 >
-                    <div>
-                        <Text block weight="semibold">
-                            Acceptance Status
-                        </Text>
-                        <Caption1 block className={styles.caption}>
-                            {
-                                data[
-                                    "ddsol_sts_acceptance@OData.Community.Display.V1.FormattedValue"
-                                ]
-                            }
-                        </Caption1>
-                    </div>
-                    <div>
-                        {" "}
-                        <Text block weight="semibold">
-                            Package Plant Status
-                        </Text>
-                        <Caption1 block className={styles.caption}>
-                            {
-                                data[
-                                    "ddsol_sts_plantpackage@OData.Community.Display.V1.FormattedValue"
-                                ]
-                            }
-                        </Caption1>
-                    </div>
-                </div>
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                    }}
-                >
-                    <div>
-                        {" "}
-                        <Text block weight="semibold">
-                            CS Status
-                        </Text>
-                        <Caption1 block className={styles.caption}>
-                            {
-                                data[
-                                    "ddsol_sts_costingsheet@OData.Community.Display.V1.FormattedValue"
-                                ]
-                            }
-                        </Caption1>
-                    </div>
-                    <div>
+                    <div style={{ width: "40%" }}>
                         {" "}
                         <Text block weight="semibold">
                             BIP Status
@@ -171,15 +249,15 @@ const PlantPackageKam: FC<Props> = ({
                             }
                         </Caption1>
                     </div>
-                    <div>
+                    <div style={{ width: "40%" }}>
                         {" "}
                         <Text block weight="semibold">
-                            Cost-Rate Change
+                            CS Status
                         </Text>
                         <Caption1 block className={styles.caption}>
                             {
                                 data[
-                                    "ddsol_sts_costratechange@OData.Community.Display.V1.FormattedValue"
+                                    "ddsol_sts_costingsheet@OData.Community.Display.V1.FormattedValue"
                                 ]
                             }
                         </Caption1>
@@ -192,26 +270,56 @@ const PlantPackageKam: FC<Props> = ({
                     display: "flex",
                     flexDirection: "row",
                     justifyContent: "space-between",
+                    width: "100%",
                 }}
             >
-                {
-                    <Field validationMessage={completions.bip}>
-                        <ProgressBar value={3 / 7} color="error" />
-                    </Field>
-                }
-
                 <Field
-                    validationMessage={completions.fs}
-                    validationState="warning"
+                    validationMessage={`BIPS ${completions?.bipsDone}/${completions?.bipsTotal}`}
+                    style={{ width: "40%" }}
+                    validationState={
+                        data["ddsol_sts_bip"] === 717170004
+                            ? "success"
+                            : data["ddsol_sts_bip"] === 717170002 ||
+                              data["ddsol_sts_bip"] === 717170003
+                            ? "warning"
+                            : "error"
+                    }
                 >
-                    <ProgressBar value={5 / 6} color="warning" />
+                    <ProgressBar
+                        value={
+                            completions?.bipsDone ??
+                            0 / completions?.bipsTotal ??
+                            0
+                        }
+                        color={
+                            data["ddsol_sts_bip"] === 717170004
+                                ? "success"
+                                : data["ddsol_sts_bip"] === 717170002 ||
+                                  data["ddsol_sts_bip"] === 717170003
+                                ? "warning"
+                                : "error"
+                        }
+                    />
                 </Field>
-
                 <Field
-                    validationMessage={completions.cs}
-                    validationState="success"
+                    validationMessage={`Costing Sheets ${completions.csDone}/${completions.csTotal}`}
+                    style={{ width: "40%" }}
+                    validationState={
+                        data["ddsol_sts_costingsheet"] >= 717170002 &&
+                        data["ddsol_sts_costingsheet"] <= 717170004
+                            ? "success"
+                            : "error"
+                    }
                 >
-                    <ProgressBar value={7 / 7} color="success" />
+                    <ProgressBar
+                        value={completions.csDone / completions.csTotal}
+                        color={
+                            data["ddsol_sts_costingsheet"] >= 717170002 &&
+                            data["ddsol_sts_costingsheet"] <= 717170004
+                                ? "success"
+                                : "error"
+                        }
+                    />
                 </Field>
             </div>
             <Divider />
@@ -224,16 +332,20 @@ const PlantPackageKam: FC<Props> = ({
                     </Caption1>
                 </div>
                 <div>
-                    <Button
-                        icon={<CalendarCancel16Regular />}
-                        size="small"
-                        style={{ marginRight: "1rem" }}
-                        onClick={() => {
-                            alert("discarded");
-                        }}
-                    >
-                        Discard
-                    </Button>
+                    {data["ddsol_sts_plantpackage"] === 717170002 ? (
+                        <Button
+                            icon={<CalendarCancel16Regular />}
+                            size="small"
+                            style={{ marginRight: "1rem" }}
+                            onClick={() => {
+                                discardRecord(data[primaryAttriute]);
+                            }}
+                        >
+                            Discard
+                        </Button>
+                    ) : (
+                        <></>
+                    )}
                     <Button
                         icon={<Open16Regular />}
                         size="small"

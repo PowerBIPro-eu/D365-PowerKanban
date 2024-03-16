@@ -17,7 +17,6 @@ export interface AppProps {
 }
 
 export const App: React.FC<AppProps> = (props) => {
-    console.log("Aditional Data: " + props.aditionalData);
     return (
         <AppStateProvider
             primaryDataIds={props.primaryDataIds}

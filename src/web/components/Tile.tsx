@@ -1,38 +1,20 @@
-import { Badge } from "@fluentui/react-badge";
-import { Card as CardFluent, CardHeader } from "@fluentui/react-card";
-import {
-    Body1Strong,
-    Button,
-    Field,
-    Persona,
-    ProgressBar,
-} from "@fluentui/react-components";
-import { Divider } from "@fluentui/react-divider";
+import { Card as CardFluent } from "@fluentui/react-card";
 import { FluentProvider } from "@fluentui/react-provider";
-import { Caption1, Subtitle2, Text } from "@fluentui/react-text";
 import { ICardStyles } from "@uifabric/react-cards";
 import * as React from "react";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import * as WebApiClient from "xrm-webapi-client";
 import { useActionDispatch } from "../domain/ActionState";
-import { useAppContext, useAppDispatch } from "../domain/AppState";
+import { useAppContext } from "../domain/AppState";
 import { BoardLane } from "../domain/BoardLane";
 import { BoardEntity } from "../domain/BoardViewConfig";
 import { CardForm } from "../domain/CardForm";
-import { useConfigState } from "../domain/ConfigState";
-import { FetchUserAvatar } from "../domain/FetchUserInfo";
 import { FlyOutForm } from "../domain/FlyOutForm";
 import { ItemTypes } from "../domain/ItemTypes";
 import { Attribute, Metadata, Option } from "../domain/Metadata";
 import { Notification } from "../domain/Notification";
 import { Subscription } from "../domain/Subscription";
 import { makeStyles, mergeClasses } from "@fluentui/react-components";
-import {
-    CalendarCancel16Regular,
-    CalendarLtr20Regular,
-    GanttChart24Regular,
-    Open16Regular,
-} from "@fluentui/react-icons";
 import { tokens, webLightTheme } from "@fluentui/tokens";
 import { shorthands } from "@griffel/core/";
 import PlantPackageKam from "./TileContent/PlantPackageKAM";
@@ -66,32 +48,11 @@ interface TileProps {
 }
 
 const TileRender = (props: TileProps) => {
-    const [completions, setCompletions] = React.useState<any>({
-        bip: "BIPs 3/7",
-        cs: "CS 7/7",
-        fs: "Feasiblity Study 5/6",
-    });
     const [appState, appDispatch] = useAppContext();
     const actionDispatch = useActionDispatch();
     const [, setOverriddenStyle] = React.useState({} as ICardStyles);
-    const [personaUrl, setPersonaUrl] = React.useState<string>(undefined);
-    const [projectImgUrl, setProjectImageUrl] =
-        React.useState<string>(undefined);
-    const [assignees, setAssignees] = React.useState<
-        Array<{ [key: string]: any }>
-    >([]);
-    const [attachments, setAttachments] = React.useState<
-        Array<{ [key: string]: any }>
-    >([]);
-    const [managers, setManagers] = React.useState<Array<string>>([]);
 
-    React.useEffect(() => {
-        setCompletions({
-            bip: "BIPs 3/7",
-            cs: "CS 7/7",
-            fs: "Feasiblity Study 5/6",
-        });
-    }, []);
+    React.useEffect(() => {}, []);
 
     if (props.config.persona) {
         React.useEffect(() => {
@@ -115,10 +76,6 @@ const TileRender = (props: TileProps) => {
             if (ownerType !== "systemuser" || !ownerId) {
                 return;
             }
-
-            FetchUserAvatar(ownerId).then((url) => {
-                setPersonaUrl(url);
-            });
         }, [props.data[props.config.persona]]);
     }
 
@@ -258,9 +215,6 @@ const TileRender = (props: TileProps) => {
             id: props.data[props.metadata?.PrimaryIdAttribute],
         });
     };
-
-    console.log("state Name: " + appState.configViewName);
-
     console.log(
         `${props.metadata.LogicalName} tile ${
             props.data[props.metadata.PrimaryIdAttribute]
@@ -382,122 +336,26 @@ const TileRender = (props: TileProps) => {
 
     const styles = useStyles();
 
-    const fetchTaskAssignees = async () => {
-        const resourceAssignmentsUserExpanded = await new Promise<
-            Array<{ [key: string]: any }>
-        >((resolve) => {
-            Xrm.WebApi.retrieveMultipleRecords(
-                "msdyn_resourceassignment",
-                `?$filter=_msdyn_taskid_value eq '${props.data.msdyn_projecttaskid}'&$expand=msdyn_bookableresourceid($expand=UserId)`
-            ).then(function onSuccess(result) {
-                resolve(result.entities);
-            });
-        });
-
-        let assignees: Array<{ [key: string]: any }> = [];
-        if (resourceAssignmentsUserExpanded.length > 0) {
-            resourceAssignmentsUserExpanded.forEach((item) => {
-                const assigneeId =
-                    item["msdyn_bookableresourceid"]["UserId"]["systemuserid"];
-                const assigneeEmail =
-                    item["msdyn_bookableresourceid"]["UserId"][
-                        "internalemailaddress"
-                    ];
-                const assigneeFullname =
-                    item["msdyn_bookableresourceid"]["UserId"]["fullname"];
-                assignees.push({
-                    id: assigneeId,
-                    name: assigneeFullname,
-                    email: assigneeEmail,
-                });
-            });
-
-            return assignees;
-        }
-        return [];
-    };
-    React.useEffect(() => {
-        fetchTaskAssignees().then((assignees) => {
-            setAssignees(assignees);
-        });
-    }, []);
-
-    const fetchProject = async () => {
-        const project = await new Promise<{ [key: string]: any }>((resolve) => {
-            Xrm.WebApi.retrieveRecord(
-                "msdyn_project",
-                `${props.data._msdyn_project_value}`,
-                "?$select=ddsol_projectimage_url,_msdyn_projectmanager_value,_proj_manager_value"
-            ).then(function onSuccess(result) {
-                resolve(result);
-            });
-        });
-        const imgRelativeUrl = project.ddsol_projectimage_url;
-        const environmentUrl = Xrm.Utility.getGlobalContext().getClientUrl();
-        const imgUrl = environmentUrl + imgRelativeUrl;
-        const managers = [
-            project._msdyn_projectmanager_value,
-            project._proj_manager_value,
-        ];
-        return { imgUrl: imgUrl, managers: managers };
-    };
-    React.useEffect(() => {
-        fetchProject().then((obj) => {
-            setProjectImageUrl(obj.imgUrl);
-            setManagers(obj.managers);
-        });
-    }, []);
-
-    const fetchTaskAttachments = async () => {
-        const taskAttachments = await new Promise<
-            Array<{ [key: string]: any }>
-        >((resolve) => {
-            Xrm.WebApi.retrieveMultipleRecords(
-                "msdyn_projecttaskattachment",
-                `?$filter=_msdyn_task_value eq '${props.data.msdyn_projecttaskid}'&$select=msdyn_linkuri,msdyn_name`
-            ).then(function onSuccess(result) {
-                resolve(result.entities);
-            });
-        });
-
-        let attachments: Array<{ [key: string]: any }> = [];
-        if (taskAttachments.length > 0) {
-            taskAttachments.forEach((item) => {
-                const attachmentName = item["msdyn_name"];
-                const attachmentUrl = item["msdyn_linkuri"];
-                attachments.push({
-                    attachmentName: attachmentName,
-                    attachmentUrl: attachmentUrl,
-                });
-            });
-
-            return attachments;
-        }
-        return [];
-    };
-    React.useEffect(() => {
-        fetchTaskAttachments().then((attachments) => {
-            setAttachments(attachments);
-        });
-    }, []);
-
     const renderSwitch = () => {
         switch (appState.configViewName) {
             case "CsCostingSheetCostingEngineerConfig":
                 return (
                     <CostingSheetContent
-                        styles={styles}
                         data={props.data}
+                        aditionalData={appState.aditionalData}
                         openInline={openInline}
+                        primaryAttriute={props.metadata.PrimaryIdAttribute}
                     />
                 );
             case "CsPlantPackageCeConfig":
                 return (
-                    <PlantPackageCE
+                    <PlantPackageKam
                         styles={styles}
                         data={props.data}
-                        completions={completions}
                         openInline={openInline}
+                        primaryAttriute={props.metadata.PrimaryIdAttribute}
+                        bipPrices={appState.aditionalData.bipPrices}
+                        costSheets={appState.aditionalData.costingSheets}
                     />
                 );
             case "CsPlantPackageKamConfig":
@@ -505,26 +363,32 @@ const TileRender = (props: TileProps) => {
                     <PlantPackageKam
                         styles={styles}
                         data={props.data}
-                        completions={completions}
                         openInline={openInline}
+                        primaryAttriute={props.metadata.PrimaryIdAttribute}
+                        bipPrices={appState.aditionalData.bipPrices}
+                        costSheets={appState.aditionalData.costingSheets}
                     />
                 );
             case "CsPlantPackageLogConfig":
                 return (
-                    <PlantPackageLog
+                    <PlantPackageKam
                         styles={styles}
                         data={props.data}
-                        completions={completions}
                         openInline={openInline}
+                        primaryAttriute={props.metadata.PrimaryIdAttribute}
+                        bipPrices={appState.aditionalData.bipPrices}
+                        costSheets={appState.aditionalData.costingSheets}
                     />
                 );
             case "CsPlantPackagePoConfig":
                 return (
-                    <PlantPackagePo
+                    <PlantPackageKam
                         styles={styles}
                         data={props.data}
-                        completions={completions}
                         openInline={openInline}
+                        primaryAttriute={props.metadata.PrimaryIdAttribute}
+                        bipPrices={appState.aditionalData.bipPrices}
+                        costSheets={appState.aditionalData.costingSheets}
                     />
                 );
             default:
@@ -538,7 +402,7 @@ const TileRender = (props: TileProps) => {
                 <CardFluent
                     className={mergeClasses(styles.card, styles.cardClosed)}
                 >
-                    {renderSwitch}
+                    {renderSwitch()}
                 </CardFluent>
             </FluentProvider>
         </div>

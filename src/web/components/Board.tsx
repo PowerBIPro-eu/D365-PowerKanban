@@ -197,7 +197,7 @@ export const Board = () => {
         const generator = async () => {
             const response = await WebApiClient.Retrieve({
                 entityName: "systemform",
-                queryParams: `?$select=formxml,name&$filter=objecttypecode eq '${entity}' and type eq 11`,
+                queryParams: `?$select=formxml,name&$filter=objecttypecode eq '${entity}' and type eq 6 and name eq 'D365 Kanban From'`,
             });
             return response;
         };
@@ -658,7 +658,7 @@ export const Board = () => {
                                         )
                                     )
                                 )
-                                .map((d) => {
+                                .map((tileData) => {
                                     const secondaryData = appState.secondaryData
                                         .filter(filterSecondaryLanes)
                                         .map((s) => ({
@@ -668,7 +668,7 @@ export const Board = () => {
                                                     sd[
                                                         `_${configState.config.secondaryEntity.parentLookup}_value`
                                                     ] ===
-                                                    d[
+                                                    tileData[
                                                         configState.metadata
                                                             .PrimaryIdAttribute
                                                     ]
@@ -739,7 +739,7 @@ export const Board = () => {
                                                 !appState.notifications
                                                     ? []
                                                     : appState.notifications[
-                                                          d[
+                                                          tileData[
                                                               configState
                                                                   .metadata
                                                                   .PrimaryIdAttribute
@@ -752,20 +752,20 @@ export const Board = () => {
                                             cardForm={actionState.selectedForm}
                                             metadata={configState.metadata}
                                             key={`tile_${
-                                                d[
+                                                tileData[
                                                     configState.metadata
                                                         .PrimaryIdAttribute
                                                 ]
                                             }`}
                                             style={advancedTileStyle}
-                                            data={d}
+                                            data={tileData}
                                             refresh={refreshBoard}
                                             searchText={appliedSearchText}
                                             subscriptions={
                                                 !appState.subscriptions
                                                     ? []
                                                     : appState.subscriptions[
-                                                          d[
+                                                          tileData[
                                                               configState
                                                                   .metadata
                                                                   .PrimaryIdAttribute
@@ -793,7 +793,7 @@ export const Board = () => {
                                             isSelected={
                                                 actionState.selectedRecords &&
                                                 actionState.selectedRecords[
-                                                    d[
+                                                    tileData[
                                                         configState.metadata
                                                             .PrimaryIdAttribute
                                                     ]
@@ -828,40 +828,42 @@ export const Board = () => {
                 .filter(filterPrimaryLanes)
                 .map(filterForSearchText)
                 .map(filterForNotifications)
-                .map((d) => (
-                    <Lane
-                        key={`lane_${d.option?.Value ?? "fallback"}`}
-                        cardForm={actionState.selectedForm}
-                        metadata={configState.metadata}
-                        refresh={refreshBoard}
-                        subscriptions={appState.subscriptions}
-                        searchText={appliedSearchText}
-                        config={configState.config.primaryEntity}
-                        separatorMetadata={configState.separatorMetadata}
-                        openRecord={openRecord}
-                        selectedRecords={actionState.selectedRecords}
-                        lane={{
-                            ...d,
-                            data: d.data.filter(
-                                (r) =>
-                                    displayState === "simple" ||
-                                    (appState.secondaryData &&
-                                        appState.secondaryData.every((t) =>
-                                            t.data.every(
-                                                (tt) =>
-                                                    tt[
-                                                        `_${configState.config.secondaryEntity.parentLookup}_value`
-                                                    ] !==
-                                                    r[
-                                                        configState.metadata
-                                                            .PrimaryIdAttribute
-                                                    ]
-                                            )
-                                        ))
-                            ),
-                        }}
-                    />
-                ))
+                .map((d) => {
+                    return (
+                        <Lane
+                            key={`lane_${d.option?.Value ?? "fallback"}`}
+                            cardForm={actionState.selectedForm}
+                            metadata={configState.metadata}
+                            refresh={refreshBoard}
+                            subscriptions={appState.subscriptions}
+                            searchText={appliedSearchText}
+                            config={configState.config.primaryEntity}
+                            separatorMetadata={configState.separatorMetadata}
+                            openRecord={openRecord}
+                            selectedRecords={actionState.selectedRecords}
+                            lane={{
+                                ...d,
+                                data: d.data.filter(
+                                    (r) =>
+                                        displayState === "simple" ||
+                                        (appState.secondaryData &&
+                                            appState.secondaryData.every((t) =>
+                                                t.data.every(
+                                                    (tt) =>
+                                                        tt[
+                                                            `_${configState.config.secondaryEntity.parentLookup}_value`
+                                                        ] !==
+                                                        r[
+                                                            configState.metadata
+                                                                .PrimaryIdAttribute
+                                                        ]
+                                                )
+                                            ))
+                                ),
+                            }}
+                        />
+                    );
+                })
         );
     }, [
         displayState,

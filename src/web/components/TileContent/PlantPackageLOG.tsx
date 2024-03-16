@@ -21,18 +21,22 @@ import { FC } from "react";
 type Props = {
     styles: any;
     data: any;
-    completions: any;
     openInline: () => void;
+    primaryAttriute: string;
 };
 
 const PlantPackageLog: FC<Props> = ({
     styles,
     data,
-    completions,
     openInline,
+    primaryAttriute,
 }) => {
     return (
         <>
+            <p>
+                This is a call for help, please show this message to me on a
+                card.
+            </p>
             <CardHeader
                 header={
                     <Subtitle2>
@@ -52,7 +56,11 @@ const PlantPackageLog: FC<Props> = ({
                     }
                 </Badge>
                 <Badge appearance="filled" color="brand">
-                    Customer
+                    {
+                        data[
+                            "_ddsol_package_value@OData.Community.Display.V1.FormattedValue"
+                        ]
+                    }
                 </Badge>
                 <Badge
                     color="brand"
@@ -109,21 +117,9 @@ const PlantPackageLog: FC<Props> = ({
                     style={{
                         display: "flex",
                         flexDirection: "row",
-                        justifyContent: "space-between",
+                        justifyContent: "space-around",
                     }}
                 >
-                    <div>
-                        <Text block weight="semibold">
-                            Acceptance Status
-                        </Text>
-                        <Caption1 block className={styles.caption}>
-                            {
-                                data[
-                                    "ddsol_sts_acceptance@OData.Community.Display.V1.FormattedValue"
-                                ]
-                            }
-                        </Caption1>
-                    </div>
                     <div>
                         {" "}
                         <Text block weight="semibold">
@@ -137,14 +133,6 @@ const PlantPackageLog: FC<Props> = ({
                             }
                         </Caption1>
                     </div>
-                </div>
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                    }}
-                >
                     <div>
                         {" "}
                         <Text block weight="semibold">
@@ -158,6 +146,22 @@ const PlantPackageLog: FC<Props> = ({
                             }
                         </Caption1>
                     </div>
+                </div>
+            </div>
+
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                }}
+            >
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-around",
+                    }}
+                >
                     <div>
                         {" "}
                         <Text block weight="semibold">
@@ -171,19 +175,6 @@ const PlantPackageLog: FC<Props> = ({
                             }
                         </Caption1>
                     </div>
-                    <div>
-                        {" "}
-                        <Text block weight="semibold">
-                            Cost-Rate Change
-                        </Text>
-                        <Caption1 block className={styles.caption}>
-                            {
-                                data[
-                                    "ddsol_sts_costratechange@OData.Community.Display.V1.FormattedValue"
-                                ]
-                            }
-                        </Caption1>
-                    </div>
                 </div>
             </div>
             <div
@@ -191,29 +182,10 @@ const PlantPackageLog: FC<Props> = ({
                 style={{
                     display: "flex",
                     flexDirection: "row",
-                    justifyContent: "space-between",
+                    justifyContent: "space-around",
+                    width: "100%",
                 }}
-            >
-                {
-                    <Field validationMessage={completions.bip}>
-                        <ProgressBar value={3 / 7} color="error" />
-                    </Field>
-                }
-
-                <Field
-                    validationMessage={completions.fs}
-                    validationState="warning"
-                >
-                    <ProgressBar value={5 / 6} color="warning" />
-                </Field>
-
-                <Field
-                    validationMessage={completions.cs}
-                    validationState="success"
-                >
-                    <ProgressBar value={7 / 7} color="success" />
-                </Field>
-            </div>
+            ></div>
             <Divider />
             <footer className={mergeClasses(styles.flex, styles.cardFooter)}>
                 <div className={styles.flex}>
@@ -224,16 +196,6 @@ const PlantPackageLog: FC<Props> = ({
                     </Caption1>
                 </div>
                 <div>
-                    <Button
-                        icon={<CalendarCancel16Regular />}
-                        size="small"
-                        style={{ marginRight: "1rem" }}
-                        onClick={() => {
-                            alert("discarded");
-                        }}
-                    >
-                        Discard
-                    </Button>
                     <Button
                         icon={<Open16Regular />}
                         size="small"

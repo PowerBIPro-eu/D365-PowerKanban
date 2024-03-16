@@ -38,7 +38,6 @@ export class PowerKanban
         this._notifyOutputChanged = notifyOutputChanged;
         this._context = context;
         this._container = container;
-        console.log(this._container, this._context);
     }
 
     /**
@@ -48,8 +47,6 @@ export class PowerKanban
     public async updateView(
         context: ComponentFramework.Context<IInputs>
     ): Promise<void> {
-        console.log("cont: " + this._context);
-        console.log(this);
         if (this._context.parameters.primaryDataSet.loading) {
             return;
         }
@@ -76,11 +73,97 @@ export class PowerKanban
                       ],
                       queryParams: "?$select=oss_powerkanbanconfigid",
                   });
-            console.log("config: " + this.config);
         }
+
         let aditionalData: Object;
-        aditionalData = await this.loadBipPrices(aditionalData);
-        // TODO load all data and switch which data to load based on config name
+        switch (this._context.parameters.configName.raw) {
+            case "CsCostingSheetCostingEngineerConfig":
+                aditionalData = await this.loadMaterials(
+                    aditionalData,
+                    "ddsol_cs_hose",
+                    "hoses"
+                );
+                aditionalData = await this.loadMaterials(
+                    aditionalData,
+                    "ddsol_cs_pipe",
+                    "pipes"
+                );
+                aditionalData = await this.loadMaterials(
+                    aditionalData,
+                    "ddsol_cs_injectionmaterial",
+                    "injectionMaterials"
+                );
+                aditionalData = await this.loadMaterials(
+                    aditionalData,
+                    "ddsol_cs_cstool",
+                    "tools"
+                );
+                aditionalData = await this.loadMaterials(
+                    aditionalData,
+                    "ddsol_cs_csoperatingstep",
+                    "operatingSteps"
+                );
+
+                break;
+            case "CsPlantPackageCeConfig":
+                aditionalData = await this.loadPlantPackageCounts(
+                    aditionalData,
+                    "ddsol_cs_bippackageplantprice",
+                    "bipPrices",
+                    "ddsol_packageplant/ddsol_cs_packageplantid,ddsol_sts_progress"
+                );
+                aditionalData = await this.loadPlantPackageCounts(
+                    aditionalData,
+                    "ddsol_cs_costingsheet",
+                    "costingSheets",
+                    "ddsol_packageplant/ddsol_cs_packageplantid,ddsol_sts_costingsheet"
+                );
+                break;
+            case "CsPlantPackageKamConfig":
+                aditionalData = await this.loadPlantPackageCounts(
+                    aditionalData,
+                    "ddsol_cs_bippackageplantprice",
+                    "bipPrices",
+                    "ddsol_packageplant/ddsol_cs_packageplantid,ddsol_sts_progress"
+                );
+                aditionalData = await this.loadPlantPackageCounts(
+                    aditionalData,
+                    "ddsol_cs_costingsheet",
+                    "costingSheets",
+                    "ddsol_packageplant/ddsol_cs_packageplantid,ddsol_sts_costingsheet"
+                );
+                break;
+            case "CsPlantPackageLogConfig":
+                aditionalData = await this.loadPlantPackageCounts(
+                    aditionalData,
+                    "ddsol_cs_bippackageplantprice",
+                    "bipPrices",
+                    "ddsol_packageplant/ddsol_cs_packageplantid,ddsol_sts_progress"
+                );
+                aditionalData = await this.loadPlantPackageCounts(
+                    aditionalData,
+                    "ddsol_cs_costingsheet",
+                    "costingSheets",
+                    "ddsol_packageplant/ddsol_cs_packageplantid,ddsol_sts_costingsheet"
+                );
+                break;
+            case "CsPlantPackagePoConfig":
+                aditionalData = await this.loadPlantPackageCounts(
+                    aditionalData,
+                    "ddsol_cs_bippackageplantprice",
+                    "bipPrices",
+                    "ddsol_packageplant/ddsol_cs_packageplantid,ddsol_sts_progress"
+                );
+                aditionalData = await this.loadPlantPackageCounts(
+                    aditionalData,
+                    "ddsol_cs_costingsheet",
+                    "costingSheets",
+                    "ddsol_packageplant/ddsol_cs_packageplantid,ddsol_sts_costingsheet"
+                );
+                break;
+            default:
+                break;
+        }
 
         const props: AppProps = {
             appId: (this._context as any).page?.appId,
@@ -100,15 +183,46 @@ export class PowerKanban
         ReactDOM.render(React.createElement(App, props), this._container);
     }
 
-    private async loadBipPrices(aditionalData: Object) {
+    private async loadMaterials(
+        aditionalData: Object,
+        table: string,
+        attributeName: string
+    ) {
         try {
-            const bipPrices = await WebApiClient.Retrieve({
-                entityName: "ddsol_cs_bippackageplantprice",
-                queryParams:
-                    "?$apply=groupby((ddsol_packageplant/ddsol_cs_packageplantid), aggregate($count as count))",
+            let costingSheetIds =
+                this._context.parameters.primaryDataSet.sortedRecordIds.join(
+                    " or ddsol_costingsheet/ddsol_cs_costingsheetid eq "
+                );
+            const materials = await WebApiClient.Retrieve({
+                entityName: table,
+                queryParams: `?$apply=filter(ddsol_costingsheet/ddsol_cs_costingsheetid eq ${costingSheetIds})/groupby((ddsol_costingsheet/ddsol_cs_costingsheetid), aggregate($count as count))`,
             });
-            console.log("Retrieved data:", bipPrices);
-            aditionalData = { ...aditionalData, bipPrices: bipPrices };
+            aditionalData = {
+                ...aditionalData,
+                [attributeName]: materials,
+            };
+        } catch (error) {
+            console.error("Error retrieving data:", error);
+        }
+        return aditionalData;
+    }
+
+    private async loadPlantPackageCounts(
+        aditionalData: Object,
+        table: string,
+        attributeName: string,
+        groupByParams: string
+    ) {
+        try {
+            let plantPackageIds =
+                this._context.parameters.primaryDataSet.sortedRecordIds.join(
+                    " or ddsol_packageplant/ddsol_cs_packageplantid eq "
+                );
+            const items = await WebApiClient.Retrieve({
+                entityName: table,
+                queryParams: `?$apply=filter(ddsol_packageplant/ddsol_cs_packageplantid eq ${plantPackageIds})/groupby((${groupByParams}), aggregate($count as count))`,
+            });
+            aditionalData = { ...aditionalData, [attributeName]: items };
         } catch (error) {
             console.error("Error retrieving data:", error);
         }

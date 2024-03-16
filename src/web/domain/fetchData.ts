@@ -262,7 +262,6 @@ export const fetchData = async (
 
                     return all;
                 }
-
                 if (attribute.AttributeType === "Boolean") {
                     const lane = all.find(
                         (l) => l.option && l.option.Value == laneSource
